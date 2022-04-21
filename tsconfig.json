@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "lib": [
+            "es2016"
+        ],
+        "target": "es2016",
+        "sourceMap": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "watch": false,
+        "outDir": "out",
+        "resolveJsonModule": true,
+        "baseUrl": "src"
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

@@ -1,0 +1,21 @@
+{
+    "name": "ts-uq-react",
+    "version": "0.0.1",
+    "description": "build typescript tonwa uq schema in React",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "debug": "SET NODE_ENV=development&&node out/index.js"
+    },
+    "keywords": [],
+    "author": "henry",
+    "license": "ISC",
+    "dependencies": {
+        "@types/node": "^17.0.19",
+        "@types/node-fetch": "^2.6.1",
+        "@types/typescript": "^2.0.0",
+        "jwt-decode": "^3.1.2",
+        "node": "^17.4.0",
+        "node-fetch": "^2.6.1"
+    }
+}
