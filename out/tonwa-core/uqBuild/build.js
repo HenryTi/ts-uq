@@ -30,8 +30,8 @@ function build(uqConfigs, buildContext) {
         if (!fs.existsSync(uqTsSrcPath)) {
             fs.mkdirSync(uqTsSrcPath);
         }
-        let tsIndex = tsTemplate.tsIndex;
-        (0, tools_1.overrideTsFile)(`${buildContext.uqTsSrcPath}/index.ts`, tsIndex);
+        //let tsIndex = tsTemplate.tsIndex;
+        //overrideTsFile(`${buildContext.uqTsSrcPath}/index.ts`, tsIndex);
         /*
         let tsCApp = tsTemplate.tsCApp;
         saveSrcTsFileIfNotExists(buildContext, 'CApp', 'ts', tsCApp);
@@ -44,7 +44,8 @@ function build(uqConfigs, buildContext) {
         */
         //saveTsFile(buildContext, 'uqs', '');
         //fs.unlinkSync(uqTsSrcPath + '/uqs.ts');
-        let centerHost = 'https://dev.tonwa.ca';
+        //let centerHost = 'https://dev.tonwa.ca';
+        let centerHost = 'https://tv.jkchemical.com';
         let centerToken = undefined;
         let centerChannel = new httpChannel_1.CenterHttpChannel(buildContext.web, centerHost, centerToken);
         let promises = uqConfigs.map(v => centerChannel.get('/tonwa/open/uq-schema', { uqOwner: v.dev.name, uqName: v.name }));

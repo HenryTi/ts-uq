@@ -97,14 +97,14 @@ export abstract class CUqApp extends CAppBase<UQs> {
 }
 `;
     }
-
-    get tsIndex(): string {
-        return `${this.tsHeader}
-export * from './uqs';
-export * from './startApp';
-`;
-    }
-
+    /*
+        get tsIndex(): string {
+            return `${this.tsHeader}
+    export * from './uqs';
+    export * from './startApp';
+    `;
+        }
+    
     get tsVMain(): string {
         return `${this.tsHeader}
 import { VPage, Page } from 'tonwa-${this.buildContext.uiPlatform}';
@@ -121,4 +121,5 @@ export class VMain extends VPage<CApp> {
 }
 `;
     }
+*/
 }

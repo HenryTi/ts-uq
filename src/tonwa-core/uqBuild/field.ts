@@ -26,6 +26,7 @@ export function fieldDefaultValue(type: FieldType) {
 export interface Field {
     name: string;
     type: FieldType;
+    idType?: string;
     tuid?: string;
     arr?: string;
     null?: boolean;

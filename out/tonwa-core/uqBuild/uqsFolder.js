@@ -37,6 +37,7 @@ function buildUqsFolder(buildContext, uqSchemas) {
         */
         let tsUqsIndexHeader = '';
         let tsUqsIndexContent;
+        let tsUqsIndexSchema = `\n\nexport const uqsSchema = {`;
         let uqsIndexFile = `${uqTsSrcPath}/uqs/index.ts`;
         if (fs.existsSync(uqsIndexFile) === true) {
             let indexText = fs.readFileSync(uqsIndexFile, 'utf8');
@@ -65,6 +66,7 @@ function buildUqsFolder(buildContext, uqSchemas) {
             tsUqFolder.build();
             tsUqsIndexHeader += `\nimport * as ${uqAlias} from './${uqAlias}';`;
             tsUqsIndexContent += `\n\t${uqAlias}: ${uqAlias}.UqExt;`;
+            tsUqsIndexSchema += `\n\t"${fullName}": ${uqAlias}.uqSchema,`;
             tsUqsIndexReExport += `\nexport * as ${uqAlias} from './${uqAlias}';`;
             //tsUqsUI += `\n\t${uqAlias}.setUI(uqs.${uqAlias});`;
         }
@@ -87,7 +89,10 @@ function buildUqsFolder(buildContext, uqSchemas) {
             }
         }
         */
-        (0, tools_1.overrideTsFile)(uqsIndexFile, tsUqsIndexHeader + tsUqsIndexContent + '\n}' + tsUqsIndexReExport + '\n');
+        (0, tools_1.overrideTsFile)(uqsIndexFile, tsUqsIndexHeader
+            + tsUqsIndexContent + '\n}'
+            + tsUqsIndexSchema + '\n}'
+            + tsUqsIndexReExport + '\n');
     });
 }
 exports.buildUqsFolder = buildUqsFolder;

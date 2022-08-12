@@ -29,7 +29,19 @@ class UqBuildContextUI extends tonwa_core_1.UqBuildContext {
     return __awaiter(this, void 0, void 0, function* () {
         console.log('start building ts-uq-react!');
         let cwd = process.cwd();
-        let uqAppPath = cwd + '/src/uq-app';
+        let srcPath;
+        if (fs.existsSync(cwd + '/src') === true) {
+            srcPath = '/src';
+        }
+        else {
+            srcPath = '/uq-app';
+            if (fs.existsSync(cwd + srcPath) === false) {
+                fs.mkdirSync(cwd + srcPath);
+            }
+        }
+        let p = cwd.indexOf('build-uq-interface');
+        let uqAppPath = cwd + (p >= 0 ? '/uq-app' : srcPath);
+        /*
         if (fs.existsSync(uqAppPath) === false) {
             uqAppPath = cwd + '/uq-app';
             if (fs.existsSync(uqAppPath) === false) {
@@ -37,9 +49,10 @@ class UqBuildContextUI extends tonwa_core_1.UqBuildContext {
                 return;
             }
         }
-        let jsonUqConfigs = cwd + '/src/uqconfig.json';
+        */
+        let jsonUqConfigs = cwd + srcPath + '/uqconfig.json';
         if (fs.existsSync(jsonUqConfigs) === false) {
-            console.error(`uqConfigs.json in ${cwd}/src not exists:`, jsonUqConfigs);
+            console.error(`uqConfigs.json in ${cwd}${srcPath} not exists:`, jsonUqConfigs);
             return;
         }
         if (fs.existsSync(uqAppPath + '/uqs') === false) {

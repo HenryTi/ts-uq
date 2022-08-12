@@ -91,28 +91,6 @@ export abstract class CUqApp extends CAppBase<UQs> {
 }
 `;
     }
-    get tsIndex() {
-        return `${this.tsHeader}
-export * from './uqs';
-export * from './startApp';
-`;
-    }
-    get tsVMain() {
-        return `${this.tsHeader}
-import { VPage, Page } from 'tonwa-${this.buildContext.uiPlatform}';
-import { CApp } from './CApp';
-
-export class VMain extends VPage<CApp> {
-    header() { return 'TEST'; }
-    content() {
-        return <div className="m-3">
-            <div>{this.renderMe()}</div>
-            <div className="mb-5">同花样例主页面</div>
-        </div>;
-    }
-}
-`;
-    }
 }
 exports.TsTemplate = TsTemplate;
 //# sourceMappingURL=TsTemplate.js.map

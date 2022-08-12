@@ -27,11 +27,26 @@ class TsUQ {
         let tsImport = `
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { IDXValue, Uq`;
-        let ts = `\n\n`;
-        ts += '\n//===============================';
-        ts += `\n//======= UQ ${this.uqAlias} ========`;
-        ts += '\n//===============================';
-        ts += '\n';
+        let ts = `
+
+
+//===============================;
+//======= UQ ${this.uqAlias} ========;
+//===============================';
+
+export interface ID {
+    id?: number;
+}
+
+export interface IDX {
+    id: number;
+}
+
+export interface IX {
+    ix: number;
+    xi: number;
+}
+`;
         let entityArr = [];
         for (let i in this.uqSchema) {
             let schema = this.uqSchema[i];
@@ -41,7 +56,7 @@ import { IDXValue, Uq`;
             let EntityType = typeEntities[type];
             if (!EntityType)
                 continue;
-            let entity = new EntityType(schema, this.buildContext);
+            let entity = new EntityType(this.uqSchema, schema, this.buildContext);
             entityArr.push(entity);
         }
         for (let entity of entityArr) {
@@ -49,14 +64,17 @@ import { IDXValue, Uq`;
             if (intf === undefined)
                 continue;
             ts += '\n' + intf + '\n';
+            let intfInActs = entity.interfaceInActs();
+            if (intfInActs === undefined)
+                continue;
+            ts += '\n' + intfInActs + '\n';
         }
         ts += `\nexport interface ParamActs {`;
         for (let entity of entityArr) {
             let ai = entity.actsInterface();
             if (ai === undefined)
                 continue;
-            ts += `\n\t${entity.actsInterface()}[];`;
-            //ts += this.buildActsInterface(this.uqSchema);
+            ts += `\n\t${ai}[];`;
         }
         ts += '\n}\n';
         ts += `
@@ -103,30 +121,40 @@ export interface UqExt extends Uq {
 }
 exports.TsUQ = TsUQ;
 class Entity {
-    constructor(schema, buildContext) {
+    constructor(uqSchema, schema, buildContext) {
+        this.uqSchema = uqSchema;
         this.schema = schema;
         this.buildContext = buildContext;
         this.entityName = schema.name;
     }
     interface() { return ''; }
+    interfaceInActs() { return undefined; }
     code() { return undefined; }
     actsInterface() { return undefined; }
     typeCaption() { return undefined; }
-    buildFields(fields, isInID = false, indent = 1) {
+    buildFields(fields, indent = 1) {
         if (!fields)
             return '';
         let ts = '';
         for (let f of fields) {
-            ts += this.buildField(f, isInID, indent);
+            ts += this.buildField(f, indent);
         }
         return ts;
     }
-    buildField(field, isInID, indent = 1) {
+    isOptionalField(field) {
+        return false;
+    }
+    isOmitted(field) {
+        return false;
+    }
+    buildField(field, indent = 1) {
+        if (this.isOmitted(field) === true)
+            return '';
         let { name, type } = field;
         let s = fieldTypeMap[type];
         if (!s)
             s = 'any';
-        let q = (isInID === true && sysFields.indexOf(name) >= 0) ? '?' : '';
+        let q = this.isOptionalField(field) === true ? '?' : '';
         return `\n${'\t'.repeat(indent)}${name}${q}: ${s};`;
     }
     buildArrs(arrFields) {
@@ -135,7 +163,7 @@ class Entity {
         let ts = '\n';
         for (let af of arrFields) {
             ts += `\t${(0, tool_1.camelCase)(af.name)}: {`;
-            ts += this.buildFields(af.fields, false, 2);
+            ts += this.buildFields(af.fields, 2);
             ts += '\n\t}[];\n';
         }
         return ts;
@@ -166,7 +194,7 @@ class IDBase extends Entity {
 }
 class ID extends IDBase {
     typeCaption() { return 'ID'; }
-    interface() {
+    interfaceInternal() {
         let { fields, keys: schemaKeys } = this.schema;
         let keys = [], others = [];
         for (let f of fields) {
@@ -178,25 +206,65 @@ class ID extends IDBase {
             else
                 others.push(f);
         }
-        let ts = `export interface ${(0, tool_1.capitalCase)(this.entityName)} {`;
-        ts += `\n\tid?: number;`;
-        ts += this.buildFields(keys, true);
-        ts += this.buildFields(others, true);
+        let inActs = this.isInActs === true ? 'InActs' : '';
+        let ts = `export interface ${(0, tool_1.capitalCase)(this.entityName)}${inActs} extends ID {`;
+        if (this.isInActs === true) {
+            ts += '\n\tID?: UqID<any>;';
+        }
+        ts += this.buildFields(keys);
+        ts += this.buildFields(others);
         ts += '\n}';
         return ts;
+    }
+    buildField(field, indent = 1) {
+        var _a;
+        if (this.isOmitted(field) === true)
+            return '';
+        let { name, type } = field;
+        let s = fieldTypeMap[type];
+        if (this.isInActs === true && type === 'id') {
+            let { ID } = field;
+            if (ID) {
+                s = `number | ${(_a = this.uqSchema[ID]) === null || _a === void 0 ? void 0 : _a.name}InActs`;
+            }
+            else {
+                s = 'number | ID';
+            }
+        }
+        if (!s)
+            s = 'any';
+        let q = this.isOptionalField(field) === true ? '?' : '';
+        return `\n${'\t'.repeat(indent)}${name}${q}: ${s};`;
+    }
+    interface() {
+        this.isInActs = false;
+        return this.interfaceInternal();
+    }
+    interfaceInActs() {
+        this.isInActs = true;
+        return this.interfaceInternal();
     }
     code() {
         return `\t${(0, tools_1.entityName)(this.entityName)}: UqID<any>;`;
     }
     actsInterface() {
-        return `${(0, tool_1.camelCase)(this.entityName)}?: ${(0, tool_1.capitalCase)(this.entityName)}`;
+        return `${(0, tool_1.camelCase)(this.entityName)}?: ${(0, tool_1.capitalCase)(this.entityName)}InActs`;
+    }
+    isOptionalField(field) {
+        return sysFields.indexOf(field.name) >= 0;
+    }
+    isOmitted(field) {
+        switch (field.name) {
+            default: return false;
+            case 'id': return true;
+        }
     }
 }
 class IDX extends IDBase {
     typeCaption() { return 'IDX'; }
     interface() {
         let { fields, exFields } = this.schema;
-        let ts = `export interface ${(0, tool_1.capitalCase)(this.entityName)} {`;
+        let ts = `export interface ${(0, tool_1.capitalCase)(this.entityName)} extends IDX {`;
         let indent = 1;
         for (let field of fields) {
             let { name, type } = field;
@@ -255,12 +323,18 @@ class IDX extends IDBase {
     actsInterface() {
         return `${(0, tool_1.camelCase)(this.entityName)}?: ActParam${(0, tool_1.capitalCase)(this.entityName)}`;
     }
+    isOmitted(field) {
+        switch (field.name) {
+            default: return false;
+            case 'id': return true;
+        }
+    }
 }
 class IX extends IDBase {
     typeCaption() { return 'IX'; }
     interface() {
         let { fields } = this.schema;
-        let ts = `export interface ${(0, tool_1.capitalCase)(this.entityName)} {`;
+        let ts = `export interface ${(0, tool_1.capitalCase)(this.entityName)} extends IX {`;
         ts += this.buildFields(fields);
         ts += '\n}';
         return ts;
@@ -271,6 +345,13 @@ class IX extends IDBase {
     }
     actsInterface() {
         return `${(0, tool_1.camelCase)(this.entityName)}?: ${(0, tool_1.capitalCase)(this.entityName)}`;
+    }
+    isOmitted(field) {
+        switch (field.name) {
+            default: return false;
+            case 'ix':
+            case 'xi': return true;
+        }
     }
 }
 class Act extends Entity {
@@ -357,6 +438,34 @@ class Pending extends Entity {
         return `\t${(0, tools_1.entityName)(this.entityName)}: UqPending<any, any>;`;
     }
 }
+class Role extends Entity {
+    typeCaption() { return undefined; }
+    interface() {
+        let names = this.schema.names;
+        let str = names.map(v => `\t'${v}'`).join(',\n');
+        return `export const $Role = [\n${str}\n];`;
+        /*
+        let obj: any = {};
+        for (let name of names) {
+            let pos = name.indexOf('.');
+            if (pos < 0) {
+                obj[name] = name;
+            }
+            else {
+                let p1 = name.substring(0, pos);
+                let p2 = name.substring(pos + 1);
+                let obj1 = obj[p1];
+                if (obj1 === undefined) {
+                    obj[p1] = obj1 = {};
+                }
+                obj1[p2] = name;
+            }
+        }
+        */
+        // let ret = 'export const $Role = ' + JSON.stringify(obj, undefined, '\t');
+        // return ret + ';\n';
+    }
+}
 class Enum extends Entity {
     typeCaption() { return undefined; }
     interface() {
@@ -382,6 +491,44 @@ class Enum extends Entity {
         return ts += '\n}';
     }
 }
+class Const extends Entity {
+    typeCaption() { return undefined; }
+    interface() {
+        let { values } = this.schema;
+        let $ = values['$'];
+        if ($) {
+            let v;
+            switch (typeof $) {
+                case 'number':
+                    v = `${$}`;
+                    break;
+                case 'string':
+                    v = `'${$}'`;
+                    break;
+            }
+            return `export const ${(0, tool_1.capitalCase)(this.entityName)} = ${v}`;
+        }
+        let ts = `export const ${(0, tool_1.capitalCase)(this.entityName)} = {`;
+        let first = true;
+        for (let i in values) {
+            if (first === false) {
+                ts += ',';
+            }
+            else {
+                first = false;
+            }
+            let v = values[i];
+            ts += '\n\t' + i + ': ';
+            if (typeof v === 'string') {
+                ts += '"' + v + '"';
+            }
+            else {
+                ts += v;
+            }
+        }
+        return ts += '\n}';
+    }
+}
 class Sheet extends Entity {
     typeCaption() { return 'Sheet'; }
     interface() {
@@ -396,7 +543,7 @@ class Sheet extends Entity {
             for (let item of returns) {
                 let { name: arrName, fields } = item;
                 ts += '\n\t' + arrName + ': {';
-                ts += this.buildFields(fields, false, 2);
+                ts += this.buildFields(fields, 2);
                 ts += '\n\t}[];';
             }
             ts += '\n}';
@@ -412,10 +559,12 @@ class Sheet extends Entity {
     }
 }
 const typeEntities = {
+    "$role": Role,
     "enum": Enum,
     'tuid': Tuid,
     'action': Act,
     'act': Act,
+    'const': Const,
     'sheet': Sheet,
     'query': Query,
     'book': Book,
