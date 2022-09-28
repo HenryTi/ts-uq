@@ -1,12 +1,12 @@
-//=== UqApp builder created on Sat Jul 16 2022 12:20:00 GMT-0400 (北美东部夏令时间) ===//
-import * as JksWarehouse from './JksWarehouse';
+//=== UqApp builder created on Wed Aug 17 2022 21:04:55 GMT-0400 (北美东部夏令时间) ===//
+import * as BzUShop from './BzUShop';
 
 export interface UQs {
-	JksWarehouse: JksWarehouse.UqExt;
+	BzUShop: BzUShop.UqExt;
 }
 
 export const uqsSchema = {
-	JksWarehouse: JksWarehouse.uqSchema,
+	"bizdev/ushop": BzUShop.uqSchema,
 }
 
-export * as JksWarehouse from './JksWarehouse';
+export * as BzUShop from './BzUShop';

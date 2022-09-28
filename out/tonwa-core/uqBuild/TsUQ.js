@@ -82,8 +82,7 @@ export interface IX {
 export interface UqExt extends Uq {
 	Acts(param:ParamActs): Promise<any>;
 	SQL: Uq;
-	IDRender(id:number):${this.buildContext.element};
-	IDLocalRender(id:number):${this.buildContext.element};
+    Role: { [key: string]: string[] };
 `;
         let typeCaptions = {};
         for (let entity of entityArr) {
@@ -442,28 +441,29 @@ class Role extends Entity {
     typeCaption() { return undefined; }
     interface() {
         let names = this.schema.names;
-        let str = names.map(v => `\t'${v}'`).join(',\n');
-        return `export const $Role = [\n${str}\n];`;
-        /*
-        let obj: any = {};
-        for (let name of names) {
-            let pos = name.indexOf('.');
-            if (pos < 0) {
-                obj[name] = name;
+        let enms = '';
+        let str = '';
+        for (let i in names) {
+            str += `\t${i}:[\n\t\t`;
+            if (i === '$') {
+                enms += 'export enum EnumRole {\n';
+                for (let n of names[i]) {
+                    enms += `\t${n} = '${n}',\n`;
+                    str += `EnumRole.${n}, `;
+                }
             }
             else {
-                let p1 = name.substring(0, pos);
-                let p2 = name.substring(pos + 1);
-                let obj1 = obj[p1];
-                if (obj1 === undefined) {
-                    obj[p1] = obj1 = {};
+                enms += `export enum EnumRole${(0, tool_1.camelCase)(i)} {\n`;
+                for (let n of names[i]) {
+                    enms += `\t${n} = '${i}.${n}',\n`;
+                    str += `EnumShop${(0, tool_1.camelCase)(i)}.${n}, `;
                 }
-                obj1[p2] = name;
             }
+            enms += '};\n\n';
+            str += '\n\t],\n';
         }
-        */
-        // let ret = 'export const $Role = ' + JSON.stringify(obj, undefined, '\t');
-        // return ret + ';\n';
+        return `${enms}export const Role = {
+${str}};`;
     }
 }
 class Enum extends Entity {
