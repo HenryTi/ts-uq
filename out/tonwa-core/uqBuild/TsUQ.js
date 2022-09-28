@@ -453,10 +453,10 @@ class Role extends Entity {
                 }
             }
             else {
-                enms += `export enum EnumRole${(0, tool_1.camelCase)(i)} {\n`;
+                enms += `export enum EnumRole${(0, tool_1.capitalCase)(i)} {\n`;
                 for (let n of names[i]) {
                     enms += `\t${n} = '${i}.${n}',\n`;
-                    str += `EnumShop${(0, tool_1.camelCase)(i)}.${n}, `;
+                    str += `EnumRole${(0, tool_1.capitalCase)(i)}.${n}, `;
                 }
             }
             enms += '};\n\n';
