@@ -1,0 +1,18 @@
+/*
+ACT #_BuildLostSalesStaffOrderAmount() {
+    VAR bizMainBoundId ID;
+    FOR (VAR bizMain ID, to ID
+        OF SELECT b.bizMain, b.to
+            FROM -- DxBizMain as a JOIN 
+                BizMainBound as b -- ON a.id=b.bizMain AND 
+            WHERE b.post=POST.staffSales AND b.item=ITEM.profitFee
+            ORDER BY b.bizMain)
+    {
+        SET bizMainBoundId = ID(
+            BizMainBound new 
+            KEY bizMain=bizMain, post=Post.staffSales, item=ITEM.orderAmount, to=to
+        );
+        PROC ProcQueueBizMain(bizMain);
+    }
+};
+*/

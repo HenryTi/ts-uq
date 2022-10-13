@@ -1,0 +1,31 @@
+ID Group ULOCAL(
+	id,						-- Object id
+	KEY name CHAR(50),
+);
+
+IX GroupObject (
+	ix Group,
+	xi Object INDEX,
+);
+
+QUERY GetGroups()
+RETURNS ret (
+	id ID,
+	name CHAR(50),
+)
+{
+	INTO ret SELECT id, name
+		FROM Group;
+};
+
+QUERY GetGroupObjects(
+	group ID,
+)
+RETURNS ret (
+	id ID,
+	type ENUM EnumObjectType,
+) {
+	INTO ret SELECT b.id, b.type
+		FROM [GroupObject] as a JOIN [Object] as b ON a.xi=b.id
+		WHERE a.ix=[group];
+};

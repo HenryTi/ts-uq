@@ -17,7 +17,7 @@ class UqBuildContextUI extends UqBuildContext {
 }
 
 (async function () {
-    console.log('start building ts-uq-react!');
+    console.log('ts-uq building ...');
     let cwd = process.cwd();
     let srcPath: string;
     if (fs.existsSync(cwd + '/src') === true) {

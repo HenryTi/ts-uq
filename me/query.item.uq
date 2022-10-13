@@ -1,0 +1,248 @@
+QUERY GetObjects() 
+RETURNS ret (
+    id ID,
+    type ENUM EnumObjectType,
+)
+{
+    INTO ret SELECT a.id, a.type
+        FROM Object as a;
+};
+
+QUERY GetDistributors ver 0.1 () 
+RETURNS ret (
+    id ID,
+    distributor ID,
+)
+{
+    INTO ret SELECT a.id, b.distributor
+        FROM Object as a 
+            JOIN ObjectDistributor as b 
+                ON a.id=b.id AND a.type=EnumObjectType.distributor;
+};
+
+QUERY GetAgents() 
+RETURNS ret (
+    id ID,
+    agent ID,
+)
+{
+    INTO ret SELECT a.id, b.agent
+        FROM Object as a 
+            JOIN ObjectAgent as b 
+                ON a.id=b.id AND a.type=EnumObjectType.agent;
+};
+
+-- post ENUM Post = Post.staffSales
+-- item ENUM Item = Item.orderAmount, Item.profitFee
+QUERY GetStaffs ver 0.1 (
+) 
+RETURNS ret (
+    opi ID,
+    item Enum Item,
+    obj ID,
+    staff ID,
+    valueToday DEC(18,4),
+    valueThisMonth DEC(18,4),
+    valueLastMonth DEC(18,4),
+)
+{
+    VAR timeZone TINYINT = timezone();
+    VAR d DATETIME, d0 DATE, d1 DATE, m0 DATE, m1 DATE;
+    SET d=NOW();
+    SET d0=DATE(d);
+    SET d1=dateadd(day, 1, d0);
+    SET m0=dateadd(day, -DAY(d0)+1, d0);
+    SET m1=dateadd(MONTH, -1, m0);
+    INTO ret SELECT c.id as opi, c.item, a.id as obj, b.staff, 
+        (
+            SELECT SUM(p.value)
+                FROM IxOpiItemDate AS p
+                WHERE p.ix=c.id
+                    AND p.xi = d0
+        ) as valueToday,
+        (
+            SELECT SUM(p.value)
+                FROM IxOpiItemDate AS p
+                WHERE p.ix=c.id
+                    AND p.xi >= m0
+                    and p.xi < d1
+        ) as valueThisMonth,
+        (
+            SELECT SUM(p.value)
+                FROM IxOpiItemDate AS p
+                WHERE p.ix=c.id
+                    AND p.xi >= m1
+                    and p.xi < m0
+        ) as valueLastMonth
+        FROM Object as a 
+            JOIN ObjectStaff as b 
+                ON a.id=b.id AND a.type=EnumObjectType.staff
+            JOIN ObjectPostItem as c
+                ON c.object=a.id AND c.post=Post.staffSales; -- AND c.item=Item.orderAmount;
+};
+
+QUERY GetPosts(
+) 
+RETURNS ret (
+    opi ID,
+    obj ID,
+    post ENUM Post,
+    item ENUM Item,
+    amountThisMonth DEC(18,4),
+    amountLastMonth DEC(18,4),
+)
+{
+    VAR timeZone TINYINT = timezone();
+    VAR d DATE, m0 DATE, m1 DATE;
+    SET d=NOW();
+    SET m0=dateadd(day, DAY(d)+1, d);
+    SET m0=dateadd(MONTH, -1, m0);
+    INTO ret SELECT c.id as opi, a.id as obj, b.post, c.item,
+        (
+            SELECT SUM(p.value)
+                FROM IxOpiItemDate AS p
+                    JOIN ObjectPostItem as opi ON p.ix=opi.id
+                WHERE opi.id=c.id
+                    AND p.xi >= m0 
+                    AND p.xi < d 
+        ) as amountThisMonth,
+        (
+            SELECT SUM(p.value)
+                FROM IxOpiItemDate AS p
+                    JOIN ObjectPostItem as opi ON p.ix=opi.id
+                WHERE opi.id=c.id
+                    AND p.xi >= m1 
+                    AND p.xi < m0 
+        ) as amountLastMonth
+        FROM Object as a 
+            JOIN ObjectPost as b 
+                ON a.id=b.id AND a.type=EnumObjectType.post
+            JOIN ObjectPostItem as c
+                ON c.object=a.id AND c.post=b.post;
+};
+
+QUERY GetUserSuperviseItem() 
+RETURNS ret (
+    item ENUM Item,
+) {
+    INTO ret SELECT a.xi as item FROM UserSuperviseItem as a WHERE a.ix=$user;
+};
+
+QUERY GetItemPeriodSum(
+    date DATE,
+    days INT,
+)
+RETURNS ret (
+    item ENUM Item,
+    opi ID ObjectPostItem,
+    value DEC(18,4),
+) {
+    /*
+    INTO ret SELECT item, sum(b.value) as value
+        FROM DaySumItem as b
+        WHERE b.xi>=date AND b.xi<DATEADD(day, days, date)
+        GROUP BY b.ix as item;
+    */
+    INTO ret SELECT u.item, t.p as opi, t.value
+        FROM (SELECT opi as p, sum(a.value) as value
+            FROM IxOpiItemDate as a
+                JOIN ObjectPostItem as b ON a.ix=b.id
+            WHERE b.object=0 AND b.post=POST.sys AND a.xi>=date AND a.xi<DATEADD(day, days, date)
+            GROUP BY b.id as opi
+        ) as t JOIN ObjectPostItem as u ON t.p=u.id
+        ORDER BY u.item ASC;
+};
+
+-- 从date开始，往前days天的按日汇总
+QUERY GetItemSumDays ver 0.1 (
+    item ENUM Item,
+    date DATE,
+    days INT,
+)
+RETURNS ret (
+    date DATE,
+    value DEC(18,4),
+) {
+    VAR timeZone TINYINT = timezone();
+    LOG CONCAT_WS(' ', item, date, days, timeZone) SUBJECT 'GetItemSumDays';
+    INTO ret SELECT gDate as date, sum(a.value) as value
+        FROM ItemHistory as a
+            JOIN UserSuperviseItem as b ON a.item=b.xi
+        WHERE b.ix=$user 
+            AND a.item=item
+            AND a.id>=minuteIdFromDate(DATEADD(day, -days, date), timeZone)
+            AND a.id<minuteIdFromDate(date, timeZone)
+        GROUP BY MinuteIdDate(a.id, timeZone) as gDate
+        ORDER BY gDate DESC;
+};
+
+-- 从date开始，往前months月的按月汇总
+QUERY GetItemSumMonths(
+    item ENUM Item,
+    date DATE,
+    months INT,
+)
+RETURNS ret (
+    date DATE,
+    value DEC(18,4),
+) {
+    VAR timeZone TINYINT = timezone();
+    INTO ret SELECT gDate as date, sum(a.value) as value
+        FROM ItemHistory as a
+            JOIN UserSuperviseItem as b ON a.item=b.xi
+        WHERE b.ix=$user
+            AND a.item=item
+            AND a.id>=minuteIdFromDate(DATEADD(month, -months, date), timeZone)
+            AND a.id<minuteIdFromDate(date, timeZone)
+        GROUP BY MinuteIdMonth(a.id, timeZone) as gDate
+        ORDER BY gDate DESC;
+};
+
+-- from < to
+QUERY GetItemHistory (
+    item ENUM Item,
+    from DATE,
+    to DATE,
+)
+PAGE (
+    id ID DESC,                 -- 分钟序id
+    biz ID,                     -- 原始凭证
+    bizMainNo char(50),
+    bizOp ID,
+    item ENUM Item,             -- 科目
+    value DEC(18,4),            -- 数值
+    memo CHAR(100),             -- 文本ID
+) {
+    VAR timeZone TINYINT = timezone();
+    PAGE SELECT a.id, c.biz, e.no as bizMainNo, a.bizOp, a.item, a.value, it.title as memo -- idtext(bk.memo) as memo
+        FROM ItemHistory as a
+            -- LEFT JOIN OPIBooking as bk ON a.booking=bk.id
+            LEFT JOIN ItemTitle as it ON a.item=it.id
+            -- JOIN UserSuperviseItem as b ON a.item=b.xi
+            JOIN DxBizOp as c ON c.id=a.bizOp
+            JOIN DxBiz as d on d.id = c.biz
+            JOIN DxBizMain as e on e.id = d.main
+        WHERE 1=1 -- b.ix=$user
+            AND a.item=item
+            AND a.id<$pageStart
+            AND a.id>=minuteIdFromDate(from, timeZone)
+            AND a.id<minuteIdFromDate(to, timeZone)
+        ORDER BY a.id DESC
+        LIMIT $pageSize;
+};
+
+QUERY GetAccounts (
+)
+RETURNS ret (
+    id ID,
+    object ID,
+    account ENUM EnumAccount,   -- 比如提成-commission
+    balance DEC(18,4),
+    objectType ENUM EnumObjectType,
+    objectTo ID,
+) {
+    INTO ret SELECT a.id, a.object, a.account, a.balance, b.type as objectType, b.to as objectTo
+        FROM ObjectAccount as a
+            JOIN Object as b ON a.object=b.id
+        ORDER BY a.object, a.account;
+};

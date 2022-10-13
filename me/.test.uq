@@ -1,0 +1,21 @@
+/*
+BUS JkHr ver 0.4 from 百灵威系统工程部/[jk-hr]
+ACCEPT [webuser-employee-query] {
+    var emp ID;
+    set emp=employee;
+    LOG CONCAT_WS(' ', webuser, emp) SUBJECT 'ACCEPT [webuser-employee-query]';
+};
+
+HISTORY CustomerBoundHistory (
+    date,
+    customer    ID,
+    boundTo     ID,
+    boundType   tinyint,
+    operation   tinyint,    -- 1:绑定；0:解绑
+);
+
+PROC a ver 0.1 () {
+        HISTORY CustomerBoundHistory 
+            set customer = 1, boundTo = 1, boundType = abs(1), operation = 1;
+};
+*/

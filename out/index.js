@@ -27,7 +27,7 @@ class UqBuildContextUI extends tonwa_core_1.UqBuildContext {
 }
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log('start building ts-uq-react!');
+        console.log('ts-uq building ...');
         let cwd = process.cwd();
         let srcPath;
         if (fs.existsSync(cwd + '/src') === true) {

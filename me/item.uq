@@ -1,0 +1,174 @@
+ENUM EnumObjectType (
+    none                = 0,
+    user                = 1,
+    customer            = 2,
+    staff               = 3,
+    agent               = 4,
+    distributor         = 5,
+    post                = 6,
+    branch              = 7,
+);
+
+ID #Object LOCAL(
+    id,
+    type ENUM EnumObjectType DEFAULT 0,
+    to ID,  -- 这个是什么意思？好像是对应objectXXX中的id，是不是没有用？
+);
+
+ID #ObjectUser LOCAL(
+    id,             -- Object
+    KEY user ID,
+);
+
+ID #ObjectCustomer LOCAL(
+    id,             -- Object
+    KEY customer ID,
+);
+
+ID #ObjectStaff LOCAL(
+    id,
+    KEY staff ID,
+);
+
+ID #ObjectBranch LOCAL(
+    id,             -- Object
+    KEY branch ID,  
+    seller ID,
+    INDEX idx_seller(seller) UNIQUE
+);
+
+ID #ObjectAgent LOCAL(
+    id,             -- Object
+    KEY agent ID,
+);
+
+ID #ObjectDistributor LOCAL(
+    id,             -- Object
+    KEY distributor ID,
+);
+
+-- 特定职位，由此对应的提成
+ID #ObjectPost LOCAL(
+    id,
+    KEY post ENUM Post,
+);
+
+ID #ObjectPostItem LOCAL(
+    id,
+    KEY object ID,
+    KEY post ENUM Post,
+    KEY item ENUM Item,
+);
+
+-- MINUTEID 分钟序ID
+ID #ItemHistory ver 0.1 MINUTEID (
+    -- 26位表达从2021开始的分钟，后面跟16位的序列号。如果重了，就顺序往后加。
+    id,                             -- 分钟序id
+    KEY bizOp ID,                   -- 业务操作id。包含biz。也可以是itemHistory id。当前的值，从这里计算来
+    KEY item ENUM Item,             -- 科目
+    value DEC(18,4),                -- 数值
+--    booking ID OPIBooking,        -- 记账动作
+    INDEX item_id(item, id) UNIQUE,
+);
+
+-- 各种Item or OpiItem 的按日合计，归一到一张表。写查询会简单很多
+IX IxOpiItemDate (
+    ix ObjectPostItem,              --  ENUM Item，对于总账item, object=0, post=0
+    xi Date,
+    value DEC(18,4),
+    rows INT,
+    p0 ID,
+    p1 ID,
+);
+
+-- OPI = object post item
+ID #OPIHistory MINUTEID (
+    id,
+    opi ID ObjectPostItem,
+    itemHistory ID,
+    value DEC(18,4),
+    booking ID OPIBooking,          -- 记账动作
+    INDEX opi_id(opi, id) UNIQUE,
+    INDEX itemHistory(itemHistory),
+);
+
+/*
+IX OPIItemHistory ver 0.3 (
+    id,                     -- 这个id可以放到队列里面去处理
+    ix ObjectPostItem,
+    xi ItemHistory,
+);
+*/
+
+IDX CurrencyItemHistory ver 0.3 (
+    id,                         --  ItemHistory
+    currency ENUM EnumCurrency,
+    value DEC(18,4),            -- 订单原值
+    rate DEC(12,4),             -- 货币兑换率=currency/本位币，本位币当下默认为RMB
+);
+
+ENUM EnumAccount (
+    commission              = 10,
+    supervisor              = 11,
+);
+
+IX AccountBooking ver 0.1 CONST (
+    ix ENUM Item,
+    xi ENUM EnumAccount,
+    ratio DEC(6,2) DEFAULT 100,             -- 百分数
+    type TINYINT DEFAULT 0,                 -- 0: 普通记账，1: supervise记账
+    post ENUM Post,
+)
++ (ix, xi, ratio, type, post)
+VALUES
+(Item.profitFee,        EnumAccount.commission,     100,    0,  Post.staffSales       ),
+(Item.amountFee,        EnumAccount.commission,     100,    0,  Post.staffSales       ),
+(Item.couponFee,        EnumAccount.commission,     100,    0,  Post.staffSales       ),
+(Item.couponCoSalesFee, EnumAccount.commission,     100,    0,  Post.staffCoSales     ),
+(Item.cashOut,          EnumAccount.commission,     -100,   0,  Post.staffSales       ),
+(Item.returnPointFee,   EnumAccount.commission,     -100,   0,  Post.staffSales       ),
+(Item.supervisorFee,    EnumAccount.supervisor,     100,    1,  Post.staffSupervisor  ),
+(Item.cashOut,          EnumAccount.supervisor,     -100,   1,  Post.staffSupervisor  ),
+(Item.cashAdjust,          EnumAccount.commission,     100,   0,  Post.staffSales       ),
+(Item.cashAdjust,          EnumAccount.supervisor,     100,   1,  Post.staffSupervisor  ),
+
+;
+
+ID #ObjectAccount LOCAL(
+    id,
+    KEY object ID,
+    KEY account ENUM EnumAccount,   -- 比如提成-commission
+    balance DEC(18,4) DEFAULT 0,
+    startBalance DEC(18,4) DEFAULT 0,
+    startDate DATE DEFAULT '2022-01-21',
+);
+
+IX ObjectAccountHistory ver 0.1 (
+    ix ObjectAccount,
+    xi DATE,            -- date -- HourID
+    value DEC(18,4),
+    opi ID ObjectPostItem,
+);
+
+IX UserObject (
+    IX user,
+    XI ID Object INDEX,
+    on TINYINT DEFAULT 0,
+    startDate DATE DEFAULT '2022-01-21',
+);
+
+-- 主管绩效核算
+IX IxOpiSupervise (
+    ixx ObjectStaff,                -- 主管人
+    ix ObjectPostItem,              -- 成员科目
+    xi DATE,                        -- 开始日期
+    end DATE DEFAULT '3000-1-1',    -- 结束日期
+    ratio DEC(6,2),                 -- 换算比例
+    INDEX ix_ixx(ix, ixx, xi) UNIQUE,
+    INDEX xi(xi),                   -- 时间排序
+);
+
+IX UserSuperviseItem (
+    IX user,
+    XI ENUM Item,
+);

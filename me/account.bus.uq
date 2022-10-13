@@ -1,0 +1,17 @@
+/*
+BUS Jk ver 0.9 fro7百灵威系统工程部/[jk-?]
+ACCEPT [payroll-done] {
+    LOG CONCAT_WS(' ', id) SUBJECT 'ACCEPT JkDeliverBus.deliver-done';
+	FOR detail {
+        IF exists(SELECT a.id FROM DxBizOp as a WHERE a.id=id) {
+            CONTINUE;
+        }
+		WITH DxOrderDetail ID=biz SET deliverDone += value;
+        WITH DxBizOp as a ID=id 
+            SET a.type=EnumBizOpType.orderDeliverDone, a.biz=biz, a.value=value, a.stamp=$stamp;
+        -- VAR queueId ID = ID(QueueBizOp new, id);
+        WITH QueueBizOp as a ID=id SET a.bizop=id;
+	}
+    -- SCHEDULE ExecQueueBizOp DELAY 1;
+};
+*/

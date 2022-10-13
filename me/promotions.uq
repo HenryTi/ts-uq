@@ -1,0 +1,173 @@
+/*
+ * 设计思路：
+ * 1. 添加 IxBizSpecialRatio 表, 用来表示某个 biz 在某种 bizOp 情况下适用的特殊提成比例
+ * 2. 其他机制用来将特殊提成比例写入该表, 并在计算提成的时候(ProcBizOp)使用
+ *      2.1. 设置表: 特殊提成比例作为一个活动, 活动可以针对产品, 设置特殊比例;
+ *      2.2. 在接收相应 bus 的时候, 检查 biz 是否满足设置表的条件，满足则添加 IxBizSpecialRatio 表;
+*/
+
+ID Promotions LOCAL(
+    id,
+    name    char(100),
+    description char(500),
+    start   date,
+    end     date,
+    isValid TINYINT default 1,  -- 0:无效，1:有效
+    creator ID, -- webUserID
+    createDate datetime,
+);
+
+ID PromotionProducts LOCAL(
+    id,
+    main  ID Promotions,
+    product ID, -- product
+);
+
+/*
+IX * PromotionProductRatio (
+    ix,  -- PromotionProduct
+    xi,  -- EnumBizOpType
+    ratio DEC(6,2) DEFAULT 0,
+);
+*/
+
+ID PromotionSalesman LOCAL(
+    id,
+    main  ID Promotions,
+    salesman ID, -- employee Id
+);
+
+ID PromotionSalesmanRatio LOCAL(
+    id,
+    KEY promotionSalesman ID,
+    KEY bizOpType ENUM EnumBizOpType,
+    KEY post ENUM Post,
+    KEY item ENUM Item,                 -- 
+    ratio DEC(6,2) DEFAULT 0,
+);
+/*
+PROC ProcSetSpecialRatio (
+    biz ID,
+    bizOpType ENUM EnumBizOpType,
+    stamp INT,
+) {
+    VAR product ID, item ID, bizOpDate date;
+    SET product = a.product, item = a.item
+    FROM orderdetail as a WHERE a.id = biz;
+    SET bizOpDate = FROM_UNIXTIME(stamp);
+
+    IF(product IS NOT NULL) {
+        VAR specialRatio DEC(6, 2);
+        SET specialRatio = a.ratio 
+        FROM PromotionProductRatio as a
+            JOIN PromotionProducts as b on a.ix = b.id
+            JOIN promotions as c on b.main = c.id
+        WHERE c.isValid = 1 AND c.start < bizOpDate AND c.end > bizOpDate
+            AND b.product = product
+            AND a.xi = bizOpType;
+        
+    --    IF(specialRatio is not NULL){
+    --        WITH IxBizSpecialRatio ix = biz xi = bizOpType SET ratio = specialRatio;
+    --    }
+        
+    }
+};
+*/
+
+/*
+PROC ProcSetSalesmanSpecialRatio (
+    biz ID,
+    salesman ID,   -- employee
+    post ENUM Post,
+) {
+    IF(salesman IS NOT NULL) {
+        VAR bizOpType ENUM EnumBizOpType, post ENUM post, item ENUM item, specialRatio DEC(6, 2);
+        SET bizOpType = a.bizOpType, post = a.post, item = a.item, specialRatio = a.ratio 
+        FROM PromotionSalesmanRatio as a
+            JOIN PromotionSalesman as b on a.promotionSalesman = b.id
+            JOIN promotions as c on b.main = c.id
+        WHERE c.isValid = 1
+            AND b.salesman = salesman
+            AND a.post = post;
+            
+        IF(specialRatio is not NULL){
+            VAR bizBookingID = ID(BizBooking new
+            KEY biz = biz, bizOpType = bizOpType, post = post, item = item);
+            VAR rawRatio dec(6, 2);
+            SET rawRatio = radio FROM BizBooking WHERE id = bizBookingID;
+            IF(specialRatio > ifnull(rawRatio, 0))
+                WITH BizBooking as a ID = bizBookingID 
+                SET a.biz = biz, a.bizOpType = bizOpType, a.post = post, a.item = item, a.ratio = specialRatio;
+
+            -- WITH IxBizSpecialRatio ix = biz xi = bizOpType SET ratio = specialRatio;
+        }
+    }
+};
+*/
+
+PROC ProcSetBizBooking (
+    biz ID,
+    bizOpType ENUM EnumBizOpType,
+    stamp INT,
+) {
+    VAR bizOpDate date;
+    SET bizOpDate = FROM_UNIXTIME(stamp);
+
+    VAR post ENUM Post, item ENUM Item, specialRatio DEC(6, 2)
+        , start date, end date, sourceId ID;
+
+    VAR product ID;
+    SET product = a.product
+    FROM orderdetail as a WHERE a.id = biz;
+    IF(product IS NOT NULL) {
+        SET post = a.post, item = a.item, specialRatio = a.ratio
+            , start = c.start, end = c.end, sourceId = a.id
+        FROM PromotionSalesmanRatio AS a
+            JOIN PromotionProducts AS b on a.promotionSalesman = b.id
+            JOIN promotions AS c on b.main = c.id
+        WHERE c.isValid = 1 AND c.start < bizOpDate AND c.end > bizOpDate
+            AND b.product = product
+            AND a.bizOpType = bizOpType;
+        IF(specialRatio is not NULL){
+            VAR bizBookingID ID = ID(
+                BizBooking new
+                KEY biz = biz, bizOpType = bizOpType, post = post, item = item
+            );
+            VAR rawRatio dec(6, 2);
+            SET rawRatio = ratio FROM BizBooking WHERE id = bizBookingID;
+            IF(specialRatio > ifnull(rawRatio, 0)){
+                WITH BizBooking as a ID = bizBookingID 
+                SET a.biz = biz, a.bizOpType = bizOpType, a.post = post, a.item = item, a.ratio = specialRatio
+                    , a.start = start, a.end = end, a.sourceId = sourceId;
+
+                -- WITH IxBizSpecialRatio ix = biz xi = bizOpType SET ratio = specialRatio;           
+            }
+        }
+    };
+
+    SET specialRatio = NULL;
+    SET post = a.post, item = a.item, specialRatio = a.ratio
+        , start = c.start, end = c.end, sourceId = a.id
+    FROM PromotionSalesmanRatio AS a
+        JOIN PromotionSalesman AS b on a.promotionSalesman = b.id
+        JOIN promotions AS c on b.main = c.id
+        JOIN dxBiz AS d on d.id = biz
+        JOIN BizMainBound AS e on d.main = e.bizMain AND e.post = a.post AND e.item = a.item
+        JOIN ObjectStaff AS f on f.id = e.to
+    WHERE c.isValid = 1 AND c.start < bizOpDate AND c.end > bizOpDate
+        AND f.staff = b.salesman
+        AND a.bizOpType = bizOpType;
+    IF(specialRatio is not NULL){
+        VAR bizBookingID ID = ID(BizBooking new
+        KEY biz = biz, bizOpType = bizOpType, post = post, item = item);
+        VAR rawRatio dec(6, 2);
+        SET rawRatio = ratio FROM BizBooking WHERE id = bizBookingID;
+        IF(specialRatio > ifnull(rawRatio, 0)){
+            WITH BizBooking as a ID = bizBookingID 
+            SET a.biz = biz, a.bizOpType = bizOpType, a.post = post, a.item = item, a.ratio = specialRatio
+                , a.start = start, a.end = end, a.sourceId = sourceId;
+
+            -- WITH IxBizSpecialRatio ix = biz xi = bizOpType SET ratio = specialRatio;
+        }
+    }
+};

@@ -206,6 +206,7 @@ class ID extends IDBase {
                 others.push(f);
         }
         let inActs = this.isInActs === true ? 'InActs' : '';
+        // if (this.entityName.toLowerCase() === 'ExportItemHistory'.toLowerCase()) debugger;
         let ts = `export interface ${(0, tool_1.capitalCase)(this.entityName)}${inActs} extends ID {`;
         if (this.isInActs === true) {
             ts += '\n\tID?: UqID<any>;';
@@ -224,7 +225,13 @@ class ID extends IDBase {
         if (this.isInActs === true && type === 'id') {
             let { ID } = field;
             if (ID) {
-                s = `number | ${(_a = this.uqSchema[ID]) === null || _a === void 0 ? void 0 : _a.name}InActs`;
+                let entityName = (_a = this.uqSchema[ID]) === null || _a === void 0 ? void 0 : _a.name;
+                if (entityName) {
+                    s = `number | ${entityName}InActs`;
+                }
+                else {
+                    s = 'number | ID';
+                }
             }
             else {
                 s = 'number | ID';

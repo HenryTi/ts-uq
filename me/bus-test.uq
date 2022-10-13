@@ -1,0 +1,109 @@
+-- Deliver Cost Bound
+-- 暂时不支持const里面的表达式引用const
+CONST JkOrderTest={
+    id: 31195716,
+    detail1: 31195717,
+    detail2: 31195718,
+    detail3: 31195719,
+    itemId: 'JKItem-2021-08-03-0001',
+    quantity: 2+3,
+    date: unix_timestamp() + 6,
+};
+
+ACT BusTestBoundStaffSales ver 0.8 (
+    orderMain ID
+) {
+    BUS JkOrderBus.[order-bound-staff-sales] SET order=orderMain;
+    BUS JkOrderBus.[order-bound-staff-sales] INTO to ADD id=999;
+    BUS JkOrderBus.[order-bound-staff-sales] LOCAL;
+    BUS JkOrderBus.[order-bound-staff-sales] STAMP unix_timestamp();
+};
+
+/*
+ACT BusTestOrderSaleCost ver 0.8 (
+    order ID,
+    ARR detail (
+        orderDetail ID,
+        cost DEC(18,4),
+    )
+) {
+    BUS JkOrderBus.[order-sale-cost] SET order=order;
+    FOR detail 
+    {
+        BUS JkOrderBus.[order-sale-cost] INTO detail 
+            ADD [order-detail]=orderDetail, [cost]=cost;
+    }
+    BUS JkOrderBus.[order-sale-cost] LOCAL;
+};
+*/
+
+PROC ProcBusTest(
+    orderMain ID
+) {
+    /*
+    BUS JkOrderBus.[deliver-done] SET warehouse=-1, id=orderMain;
+    FOR (VAR detailId ID, value DEC(18,4) OF 
+        SELECT id as detailId, quantity as value FROM OrderDetail WHERE main=orderMain)
+    {
+        BUS JkOrderBus.[deliver-done] INTO detail ADD id=detailId, value=value;
+    }
+    */
+
+    BUS JkOrderBus.[order-sale-cost] SET order=orderMain;
+    FOR (VAR detailId ID, price DEC(18,4) OF 
+        SELECT id as detailId, price FROM OrderDetail WHERE main=orderMain)
+    {
+        VAR cost DEC(18,4) = price*0.85;
+        BUS JkOrderBus.[order-sale-cost] INTO detail 
+            ADD [order-detail]=detailId, [cost]=cost;
+    }
+
+    BUS JkOrderBus.[order-bound-staff-sales] SET order=orderMain;
+    BUS JkOrderBus.[order-bound-staff-sales] INTO to ADD id=999;
+
+    -- BUS JkOrderBus.[deliver-done] LOCAL;
+    -- BUS JkOrderBus.[order-sale-cost] LOCAL;
+    BUS JkOrderBus.[order-bound-staff-sales] LOCAL;
+};
+
+ID #DeliverMain GLOBAL(
+    id,
+    KEY no,
+    customer ID,
+    contact ID,
+	warehouse ID,
+	cutOffMain ID,          -- 这两个字段放在这儿不对，应该用单独的IX
+	trayNumber int,
+	sys(create),
+);
+
+ID #DeliverDetail GLOBAL(
+    id,                     -- 
+    main ID DeliverMain,    -- DeliverMain id	
+	orderDetail ID,			-- OrderDetail ID
+    quantity dec(18, 4),
+);
+
+ACT DoneDeliver (
+	customer ID,
+    contact ID,
+	warehouse ID,
+    ARR detail (
+        orderDetail ID,
+        quantity DEC(18,4),
+    )
+) {
+    LOG CONCAT_WS(' ', customer, contact, warehouse) SUBJECT 'ACT DoneDeliver';
+    VAR deliverMainId ID = ID(DeliverMain new KEY no=NO(DeliverMain));
+    WITH DeliverMain as a ID=deliverMainId
+        SET a.customer=customer, a.contact=contact, a.warehouse=warehouse;
+    BUS JkDeliverBus.[deliver-done] SET id=deliverMainId;
+    FOR detail {
+        VAR deliverDetailId ID = ID(DeliverDetail new);
+        WITH DeliverDetail as a ID=deliverDetailId
+            SET a.main=deliverMainId, a.quantity=quantity, a.orderDetail=orderDetail;
+        BUS JkDeliverBus.[deliver-done] INTO detail
+            ADD id=deliverDetailId, value=quantity, biz=orderDetail;
+    }
+    BUS JkDeliverBus.[deliver-done] LOCAL;
+};

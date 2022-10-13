@@ -1,0 +1,48 @@
+BUS JkDeliverBus ver 0.9 from 百灵威系统工程部/[jk-deliver]
+ACCEPT [deliver-done] {
+    LOG CONCAT_WS(' ', id) SUBJECT 'ACCEPT JkDeliverBus.deliver-done';
+	FOR detail {
+        IF exists(SELECT a.id FROM DxBizOp as a WHERE a.id=id LOCK) {
+            CONTINUE;
+        }
+		WITH DxOrderDetail ID=biz SET deliverDone += value;
+        -- PROC ProcSetSpecialRatio(biz, EnumBizOpType.orderDeliverDone, $stamp);
+        PROC ProcSetBizBooking(biz, EnumBizOpType.orderDeliverDone, $stamp);
+        WITH DxBizOp as a ID=id 
+            SET a.type=EnumBizOpType.orderDeliverDone, a.biz=biz, a.value=value, a.stamp=$stamp;
+        WITH QueueBizOp as a ID=id SET a.bizop=id;
+	}
+    -- SCHEDULE ExecQueueBizOp DELAY 1;
+}
+ACCEPT [pickup-performance] {
+    -- 处理sheet: 1.设置sheet的状态；2.把sheet排入QueueBizMain队列；3.DxBiz在下面写入
+    VAR mainId ID = id;
+
+    -- 处理针对sheet的操作：1.设置操作相关的数据；2.将操作排入QueueBizOp队列；
+    FOR detail {
+        -- 这也是处理sheet
+        WITH DxBiz ID = id set main = mainId, ready = 1;
+
+        WITH DxBizOp as a ID = id
+            SET a.type = EnumBizOpType.pickupDone, a.biz = id, a.value = value, a.stamp = $stamp;
+        VAR queueId ID = ID(QueueBizOp new, id);
+        -- TODO: 还需要改造ProcWriteItemHistory，使之能调用ProcItemHistory以便写ItemHistory
+    }
+
+    -- 处理sheet的受益人
+    VAR operatorId ID;
+    set operatorId = ID(ObjectStaff, operator);
+    IF operatorId is NULL {
+        set operatorId = ID(object new);
+        WITH Object ID = operatorId SET type = EnumObjectType.staff;
+        WITH ObjectStaff ID = operatorId SET staff = operator;
+    }
+    VAR bizMainBoundId ID;
+    SET bizMainBoundId = ID(
+        BizMainBound new
+        KEY BizMain = mainId, post = Post.staff, item = ITEM.pickupPoint, to = operatorId
+    );
+
+    -- 事先在postbound中设置好绩效计算方法，即绩效结果和value的关系
+    PROC ProcQueueBizMain(mainId);
+};
