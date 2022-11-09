@@ -45,7 +45,8 @@ function build(uqConfigs, buildContext) {
         //saveTsFile(buildContext, 'uqs', '');
         //fs.unlinkSync(uqTsSrcPath + '/uqs.ts');
         //let centerHost = 'https://dev.tonwa.ca';
-        let centerHost = 'https://tv.jkchemical.com';
+        let centerHost = 'http://localhost:3000';
+        //let centerHost = 'https://tv.jkchemical.com';
         let centerToken = undefined;
         let centerChannel = new httpChannel_1.CenterHttpChannel(buildContext.web, centerHost, centerToken);
         let promises = uqConfigs.map(v => centerChannel.get('/tonwa/open/uq-schema', { uqOwner: v.dev.name, uqName: v.name }));

@@ -11,6 +11,13 @@
     },
     "uqs": [
         {
+            "dev": "jk",
+            "name": "product",
+            "alias": "Product"
+        }
+    ],
+    "uqs1": [
+        {
             "dev": "bz",
             "name": "ushop",
             "alias": "UShop"
@@ -19,6 +26,11 @@
             "dev": "jk",
             "name": "me",
             "alias": "Me"
+        },
+        {
+            "dev": "jk",
+            "name": "hr",
+            "alias": "Hr"
         }
     ]
 }

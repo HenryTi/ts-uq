@@ -56,6 +56,7 @@ export interface IX {
         let entityArr: Entity[] = [];
         for (let i in this.uqSchema) {
             let schema = this.uqSchema[i];
+            if (i === 'role') continue;
             let { name, type } = schema;
             if (name.indexOf('$') > 0) continue;
             let EntityType: (new (uqSchema: any, schema: any, buildContext: UqBuildContext) => Entity) = typeEntities[type];
@@ -68,6 +69,10 @@ export interface IX {
             let intf = entity.interface();
             if (intf === undefined) continue;
             ts += '\n' + intf + '\n';
+            let enumConsts = entity.buildConsts();
+            if (enumConsts !== undefined) {
+                ts += '\n' + enumConsts + '\n';
+            }
             let intfInActs = entity.interfaceInActs();
             if (intfInActs === undefined) continue;
             ts += '\n' + intfInActs + '\n';
@@ -136,6 +141,7 @@ abstract class Entity {
         this.entityName = schema.name;
     }
     interface(): string { return ''; }
+    buildConsts(): string { return undefined; }
     interfaceInActs(): string { return undefined; }
     code(): string { return undefined; }
     actsInterface(): string { return undefined; }
@@ -199,6 +205,67 @@ abstract class Entity {
         ts += '}';
         return ts;
     }
+
+    buildEnum(): string {
+        return;
+    }
+
+    protected buildInternalEnum(): string {
+        let { values } = this.schema;
+        if (values === undefined) return undefined;
+        let ts = `export enum ${capitalCase(this.entityName)} {`;
+        let first: boolean = true;
+        for (let i in values) {
+            if (first === false) {
+                ts += ',';
+            }
+            else {
+                first = false;
+            }
+            let v = values[i];
+            ts += '\n\t' + i + ' = ';
+            if (typeof v === 'string') {
+                ts += '"' + v + '"';
+            }
+            else {
+                ts += v;
+            }
+        }
+        return ts += '\n}'
+    }
+
+    protected buildInternalConst(): string {
+        let { values } = this.schema;
+        if (values === undefined) return undefined;
+        let $ = values['$'];
+        if ($) {
+            let v: string;
+            switch (typeof $) {
+                case 'number': v = `${$}`; break;
+                case 'string': v = `'${$}'`; break;
+            }
+            return `export const ${capitalCase(this.entityName)} = ${v}`;
+        }
+        let ts = `export const ${capitalCase(this.entityName)} = {`;
+        let first: boolean = true;
+        for (let i in values) {
+            if (first === false) {
+                ts += ',';
+            }
+            else {
+                first = false;
+            }
+            let v = values[i];
+            ts += '\n\t' + i + ': ';
+            if (typeof v === 'string') {
+                ts += '"' + v + '"';
+            }
+            else {
+                ts += v;
+            }
+        }
+        return ts += '\n}'
+    }
 }
 
 abstract class IDBase extends Entity {
@@ -208,7 +275,7 @@ class ID extends IDBase {
     private isInActs: boolean;
     typeCaption(): string { return 'ID'; }
     private interfaceInternal(): string {
-        let { fields, keys: schemaKeys } = this.schema;
+        let { fields, keys: schemaKeys, values } = this.schema;
         let keys: Field[] = [], others: Field[] = [];
         for (let f of fields) {
             let { name } = f;
@@ -236,7 +303,8 @@ class ID extends IDBase {
             if (ID) {
                 let entityName = this.uqSchema[ID]?.name;
                 if (entityName) {
-                    s = `number | ${entityName}InActs`;
+                    //s = `number | ${entityName}InActs`;
+                    s = `number | ID`;
                 }
                 else {
                     s = 'number | ID';
@@ -253,6 +321,9 @@ class ID extends IDBase {
     interface(): string {
         this.isInActs = false;
         return this.interfaceInternal();
+    }
+    buildConsts(): string {
+        return this.buildInternalConst();
     }
     interfaceInActs(): string {
         this.isInActs = true;
@@ -412,7 +483,7 @@ class Tuid extends Entity {
         return ts;
     }
     code(): string {
-        return `\t${entityName(this.entityName)}: UqTuid<Tuid${capitalCase(this.entityName)}>&{tv:(id:number, render?:Render<any>)=>${this.buildContext.element}};`;
+        return `\t${entityName(this.entityName)}: UqTuid<Tuid${capitalCase(this.entityName)}>;`;
     }
 }
 
@@ -495,61 +566,14 @@ ${str}};`;
 class Enum extends Entity {
     typeCaption(): string { return undefined; }
     interface(): string {
-        let { values } = this.schema;
-        let ts = `export enum ${capitalCase(this.entityName)} {`;
-        let first: boolean = true;
-        for (let i in values) {
-            if (first === false) {
-                ts += ',';
-            }
-            else {
-                first = false;
-            }
-            let v = values[i];
-            ts += '\n\t' + i + ' = ';
-            if (typeof v === 'string') {
-                ts += '"' + v + '"';
-            }
-            else {
-                ts += v;
-            }
-        }
-        return ts += '\n}'
+        return this.buildInternalEnum();
     }
 }
 
 class Const extends Entity {
     typeCaption(): string { return undefined; }
     interface(): string {
-        let { values } = this.schema;
-        let $ = values['$'];
-        if ($) {
-            let v: string;
-            switch (typeof $) {
-                case 'number': v = `${$}`; break;
-                case 'string': v = `'${$}'`; break;
-            }
-            return `export const ${capitalCase(this.entityName)} = ${v}`;
-        }
-        let ts = `export const ${capitalCase(this.entityName)} = {`;
-        let first: boolean = true;
-        for (let i in values) {
-            if (first === false) {
-                ts += ',';
-            }
-            else {
-                first = false;
-            }
-            let v = values[i];
-            ts += '\n\t' + i + ': ';
-            if (typeof v === 'string') {
-                ts += '"' + v + '"';
-            }
-            else {
-                ts += v;
-            }
-        }
-        return ts += '\n}'
+        return this.buildInternalConst();
     }
 }
 

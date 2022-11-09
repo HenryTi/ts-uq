@@ -50,6 +50,8 @@ export interface IX {
         let entityArr = [];
         for (let i in this.uqSchema) {
             let schema = this.uqSchema[i];
+            if (i === 'role')
+                continue;
             let { name, type } = schema;
             if (name.indexOf('$') > 0)
                 continue;
@@ -64,6 +66,10 @@ export interface IX {
             if (intf === undefined)
                 continue;
             ts += '\n' + intf + '\n';
+            let enumConsts = entity.buildConsts();
+            if (enumConsts !== undefined) {
+                ts += '\n' + enumConsts + '\n';
+            }
             let intfInActs = entity.interfaceInActs();
             if (intfInActs === undefined)
                 continue;
@@ -127,6 +133,7 @@ class Entity {
         this.entityName = schema.name;
     }
     interface() { return ''; }
+    buildConsts() { return undefined; }
     interfaceInActs() { return undefined; }
     code() { return undefined; }
     actsInterface() { return undefined; }
@@ -188,13 +195,77 @@ class Entity {
         ts += '}';
         return ts;
     }
+    buildEnum() {
+        return;
+    }
+    buildInternalEnum() {
+        let { values } = this.schema;
+        if (values === undefined)
+            return undefined;
+        let ts = `export enum ${(0, tool_1.capitalCase)(this.entityName)} {`;
+        let first = true;
+        for (let i in values) {
+            if (first === false) {
+                ts += ',';
+            }
+            else {
+                first = false;
+            }
+            let v = values[i];
+            ts += '\n\t' + i + ' = ';
+            if (typeof v === 'string') {
+                ts += '"' + v + '"';
+            }
+            else {
+                ts += v;
+            }
+        }
+        return ts += '\n}';
+    }
+    buildInternalConst() {
+        let { values } = this.schema;
+        if (values === undefined)
+            return undefined;
+        let $ = values['$'];
+        if ($) {
+            let v;
+            switch (typeof $) {
+                case 'number':
+                    v = `${$}`;
+                    break;
+                case 'string':
+                    v = `'${$}'`;
+                    break;
+            }
+            return `export const ${(0, tool_1.capitalCase)(this.entityName)} = ${v}`;
+        }
+        let ts = `export const ${(0, tool_1.capitalCase)(this.entityName)} = {`;
+        let first = true;
+        for (let i in values) {
+            if (first === false) {
+                ts += ',';
+            }
+            else {
+                first = false;
+            }
+            let v = values[i];
+            ts += '\n\t' + i + ': ';
+            if (typeof v === 'string') {
+                ts += '"' + v + '"';
+            }
+            else {
+                ts += v;
+            }
+        }
+        return ts += '\n}';
+    }
 }
 class IDBase extends Entity {
 }
 class ID extends IDBase {
     typeCaption() { return 'ID'; }
     interfaceInternal() {
-        let { fields, keys: schemaKeys } = this.schema;
+        let { fields, keys: schemaKeys, values } = this.schema;
         let keys = [], others = [];
         for (let f of fields) {
             let { name } = f;
@@ -227,7 +298,8 @@ class ID extends IDBase {
             if (ID) {
                 let entityName = (_a = this.uqSchema[ID]) === null || _a === void 0 ? void 0 : _a.name;
                 if (entityName) {
-                    s = `number | ${entityName}InActs`;
+                    //s = `number | ${entityName}InActs`;
+                    s = `number | ID`;
                 }
                 else {
                     s = 'number | ID';
@@ -245,6 +317,9 @@ class ID extends IDBase {
     interface() {
         this.isInActs = false;
         return this.interfaceInternal();
+    }
+    buildConsts() {
+        return this.buildInternalConst();
     }
     interfaceInActs() {
         this.isInActs = true;
@@ -400,7 +475,7 @@ class Tuid extends Entity {
         return ts;
     }
     code() {
-        return `\t${(0, tools_1.entityName)(this.entityName)}: UqTuid<Tuid${(0, tool_1.capitalCase)(this.entityName)}>&{tv:(id:number, render?:Render<any>)=>${this.buildContext.element}};`;
+        return `\t${(0, tools_1.entityName)(this.entityName)}: UqTuid<Tuid${(0, tool_1.capitalCase)(this.entityName)}>;`;
     }
 }
 class Book extends Entity {
@@ -476,64 +551,13 @@ ${str}};`;
 class Enum extends Entity {
     typeCaption() { return undefined; }
     interface() {
-        let { values } = this.schema;
-        let ts = `export enum ${(0, tool_1.capitalCase)(this.entityName)} {`;
-        let first = true;
-        for (let i in values) {
-            if (first === false) {
-                ts += ',';
-            }
-            else {
-                first = false;
-            }
-            let v = values[i];
-            ts += '\n\t' + i + ' = ';
-            if (typeof v === 'string') {
-                ts += '"' + v + '"';
-            }
-            else {
-                ts += v;
-            }
-        }
-        return ts += '\n}';
+        return this.buildInternalEnum();
     }
 }
 class Const extends Entity {
     typeCaption() { return undefined; }
     interface() {
-        let { values } = this.schema;
-        let $ = values['$'];
-        if ($) {
-            let v;
-            switch (typeof $) {
-                case 'number':
-                    v = `${$}`;
-                    break;
-                case 'string':
-                    v = `'${$}'`;
-                    break;
-            }
-            return `export const ${(0, tool_1.capitalCase)(this.entityName)} = ${v}`;
-        }
-        let ts = `export const ${(0, tool_1.capitalCase)(this.entityName)} = {`;
-        let first = true;
-        for (let i in values) {
-            if (first === false) {
-                ts += ',';
-            }
-            else {
-                first = false;
-            }
-            let v = values[i];
-            ts += '\n\t' + i + ': ';
-            if (typeof v === 'string') {
-                ts += '"' + v + '"';
-            }
-            else {
-                ts += v;
-            }
-        }
-        return ts += '\n}';
+        return this.buildInternalConst();
     }
 }
 class Sheet extends Entity {

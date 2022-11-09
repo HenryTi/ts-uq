@@ -422,6 +422,214 @@ exports.uqSchema = {
             }
         ]
     },
+    "createpromotionsalesmanratio": {
+        "name": "createPromotionSalesmanRatio",
+        "type": "proc",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "salesman",
+                "type": "id"
+            },
+            {
+                "name": "start",
+                "type": "date"
+            },
+            {
+                "name": "end",
+                "type": "date"
+            },
+            {
+                "name": "ratio",
+                "type": "dec",
+                "scale": 2,
+                "precision": 6
+            }
+        ],
+        "returns": []
+    },
+    "promotions": {
+        "name": "Promotions",
+        "type": "id",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "id",
+                "type": "id",
+                "null": false
+            },
+            {
+                "name": "name",
+                "type": "char",
+                "size": 100
+            },
+            {
+                "name": "description",
+                "type": "char",
+                "size": 500
+            },
+            {
+                "name": "start",
+                "type": "date"
+            },
+            {
+                "name": "end",
+                "type": "date"
+            },
+            {
+                "name": "isValid",
+                "type": "tinyint"
+            },
+            {
+                "name": "creator",
+                "type": "id"
+            },
+            {
+                "name": "createDate",
+                "type": "datetime"
+            }
+        ],
+        "keys": [],
+        "nameNoVice": [
+            "name"
+        ],
+        "global": false,
+        "idType": 12,
+        "isMinute": false
+    },
+    "promotionproducts": {
+        "name": "PromotionProducts",
+        "type": "id",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "id",
+                "type": "id",
+                "null": false
+            },
+            {
+                "name": "main",
+                "type": "id",
+                "ID": "promotions",
+                "tuid": "promotions"
+            },
+            {
+                "name": "product",
+                "type": "id"
+            }
+        ],
+        "keys": [],
+        "global": false,
+        "idType": 12,
+        "isMinute": false
+    },
+    "promotionsalesman": {
+        "name": "PromotionSalesman",
+        "type": "id",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "id",
+                "type": "id",
+                "null": false
+            },
+            {
+                "name": "main",
+                "type": "id",
+                "ID": "promotions",
+                "tuid": "promotions"
+            },
+            {
+                "name": "salesman",
+                "type": "id"
+            }
+        ],
+        "keys": [],
+        "global": false,
+        "idType": 12,
+        "isMinute": false
+    },
+    "promotionsalesmanratio": {
+        "name": "PromotionSalesmanRatio",
+        "type": "id",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "id",
+                "type": "id",
+                "null": false
+            },
+            {
+                "name": "promotionSalesman",
+                "type": "id"
+            },
+            {
+                "name": "bizOpType",
+                "type": "enum"
+            },
+            {
+                "name": "post",
+                "type": "enum"
+            },
+            {
+                "name": "item",
+                "type": "enum"
+            },
+            {
+                "name": "ratio",
+                "type": "dec",
+                "scale": 2,
+                "precision": 6
+            }
+        ],
+        "keys": [
+            {
+                "name": "promotionSalesman",
+                "type": "id"
+            },
+            {
+                "name": "bizOpType",
+                "type": "enum"
+            },
+            {
+                "name": "post",
+                "type": "enum"
+            },
+            {
+                "name": "item",
+                "type": "enum"
+            }
+        ],
+        "global": false,
+        "idType": 12,
+        "isMinute": false
+    },
+    "procsetbizbooking": {
+        "name": "ProcSetBizBooking",
+        "type": "proc",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "biz",
+                "type": "id"
+            },
+            {
+                "name": "bizOpType",
+                "type": "enum"
+            },
+            {
+                "name": "stamp",
+                "type": "int"
+            }
+        ],
+        "returns": []
+    },
     "item": {
         "name": "Item",
         "type": "enum",
@@ -627,195 +835,6 @@ exports.uqSchema = {
             }
         ]
     },
-    "promotions": {
-        "name": "Promotions",
-        "type": "id",
-        "private": false,
-        "sys": true,
-        "fields": [
-            {
-                "name": "id",
-                "type": "id",
-                "null": false
-            },
-            {
-                "name": "name",
-                "type": "char",
-                "size": 100
-            },
-            {
-                "name": "description",
-                "type": "char",
-                "size": 500
-            },
-            {
-                "name": "start",
-                "type": "date"
-            },
-            {
-                "name": "end",
-                "type": "date"
-            },
-            {
-                "name": "isValid",
-                "type": "tinyint"
-            },
-            {
-                "name": "creator",
-                "type": "id"
-            },
-            {
-                "name": "createDate",
-                "type": "datetime"
-            }
-        ],
-        "keys": [],
-        "nameNoVice": [
-            "name"
-        ],
-        "global": false,
-        "idType": 12,
-        "isMinute": false
-    },
-    "promotionproducts": {
-        "name": "PromotionProducts",
-        "type": "id",
-        "private": false,
-        "sys": true,
-        "fields": [
-            {
-                "name": "id",
-                "type": "id",
-                "null": false
-            },
-            {
-                "name": "main",
-                "type": "id",
-                "ID": "promotions",
-                "tuid": "promotions"
-            },
-            {
-                "name": "product",
-                "type": "id"
-            }
-        ],
-        "keys": [],
-        "global": false,
-        "idType": 12,
-        "isMinute": false
-    },
-    "promotionsalesman": {
-        "name": "PromotionSalesman",
-        "type": "id",
-        "private": false,
-        "sys": true,
-        "fields": [
-            {
-                "name": "id",
-                "type": "id",
-                "null": false
-            },
-            {
-                "name": "main",
-                "type": "id",
-                "ID": "promotions",
-                "tuid": "promotions"
-            },
-            {
-                "name": "salesman",
-                "type": "id"
-            }
-        ],
-        "keys": [],
-        "global": false,
-        "idType": 12,
-        "isMinute": false
-    },
-    "promotionsalesmanratio": {
-        "name": "PromotionSalesmanRatio",
-        "type": "id",
-        "private": false,
-        "sys": true,
-        "fields": [
-            {
-                "name": "id",
-                "type": "id",
-                "null": false
-            },
-            {
-                "name": "promotionSalesman",
-                "type": "id"
-            },
-            {
-                "name": "bizOpType",
-                "type": "enum"
-            },
-            {
-                "name": "post",
-                "type": "enum"
-            },
-            {
-                "name": "item",
-                "type": "enum"
-            },
-            {
-                "name": "ratio",
-                "type": "dec",
-                "scale": 2,
-                "precision": 6
-            }
-        ],
-        "keys": [
-            {
-                "name": "promotionSalesman",
-                "type": "id"
-            },
-            {
-                "name": "bizOpType",
-                "type": "enum"
-            },
-            {
-                "name": "post",
-                "type": "enum"
-            },
-            {
-                "name": "item",
-                "type": "enum"
-            }
-        ],
-        "global": false,
-        "idType": 12,
-        "isMinute": false
-    },
-    "procsetbizbooking": {
-        "name": "ProcSetBizBooking",
-        "type": "proc",
-        "private": false,
-        "sys": true,
-        "fields": [
-            {
-                "name": "biz",
-                "type": "id"
-            },
-            {
-                "name": "bizOpType",
-                "type": "enum"
-            },
-            {
-                "name": "stamp",
-                "type": "int"
-            }
-        ],
-        "returns": []
-    },
-    "maxactionrows": {
-        "name": "maxActionRows",
-        "type": "const",
-        "private": false,
-        "sys": true,
-        "fields": [],
-        "values": {}
-    },
     "procqueuebizmain": {
         "name": "ProcQueueBizMain",
         "type": "proc",
@@ -828,6 +847,252 @@ exports.uqSchema = {
             }
         ],
         "returns": []
+    },
+    "getmonthsumproduct": {
+        "name": "GetMonthSumProduct",
+        "type": "query",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "item",
+                "type": "enum"
+            },
+            {
+                "name": "id",
+                "type": "id"
+            }
+        ],
+        "returns": [
+            {
+                "name": "$page",
+                "fields": [
+                    {
+                        "name": "month",
+                        "type": "int"
+                    },
+                    {
+                        "name": "value",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "amount",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "profit",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "receive",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "return",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    }
+                ],
+                "order": "desc"
+            }
+        ]
+    },
+    "getproductsumbymonth": {
+        "name": "GetProductSumByMonth",
+        "type": "query",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "item",
+                "type": "enum"
+            },
+            {
+                "name": "month",
+                "type": "int"
+            },
+            {
+                "name": "count",
+                "type": "int"
+            }
+        ],
+        "returns": [
+            {
+                "name": "ret",
+                "fields": [
+                    {
+                        "name": "id",
+                        "type": "id"
+                    },
+                    {
+                        "name": "value",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "amount",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "profit",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "receive",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "return",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    }
+                ]
+            }
+        ]
+    },
+    "getmonthsumcustomer": {
+        "name": "GetMonthSumCustomer",
+        "type": "query",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "item",
+                "type": "enum"
+            },
+            {
+                "name": "id",
+                "type": "id"
+            }
+        ],
+        "returns": [
+            {
+                "name": "$page",
+                "fields": [
+                    {
+                        "name": "month",
+                        "type": "int"
+                    },
+                    {
+                        "name": "value",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "amount",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "profit",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "receive",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "return",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    }
+                ],
+                "order": "desc"
+            }
+        ]
+    },
+    "getcustomersumbymonth": {
+        "name": "GetCustomerSumByMonth",
+        "type": "query",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "item",
+                "type": "enum"
+            },
+            {
+                "name": "month",
+                "type": "int"
+            },
+            {
+                "name": "count",
+                "type": "int"
+            }
+        ],
+        "returns": [
+            {
+                "name": "ret",
+                "fields": [
+                    {
+                        "name": "id",
+                        "type": "id"
+                    },
+                    {
+                        "name": "value",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "amount",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "profit",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "receive",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "return",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    }
+                ]
+            }
+        ]
+    },
+    "maxactionrows": {
+        "name": "maxActionRows",
+        "type": "const",
+        "private": false,
+        "sys": true,
+        "fields": [],
+        "values": {}
     },
     "enumobjecttype": {
         "name": "EnumObjectType",
@@ -2015,244 +2280,6 @@ exports.uqSchema = {
             "SaleBranch": 21,
             "FactoryBranch": 22
         }
-    },
-    "getmonthsumproduct": {
-        "name": "GetMonthSumProduct",
-        "type": "query",
-        "private": false,
-        "sys": true,
-        "fields": [
-            {
-                "name": "item",
-                "type": "enum"
-            },
-            {
-                "name": "id",
-                "type": "id"
-            }
-        ],
-        "returns": [
-            {
-                "name": "$page",
-                "fields": [
-                    {
-                        "name": "month",
-                        "type": "int"
-                    },
-                    {
-                        "name": "value",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "amount",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "profit",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "receive",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "return",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    }
-                ],
-                "order": "desc"
-            }
-        ]
-    },
-    "getproductsumbymonth": {
-        "name": "GetProductSumByMonth",
-        "type": "query",
-        "private": false,
-        "sys": true,
-        "fields": [
-            {
-                "name": "item",
-                "type": "enum"
-            },
-            {
-                "name": "month",
-                "type": "int"
-            },
-            {
-                "name": "count",
-                "type": "int"
-            }
-        ],
-        "returns": [
-            {
-                "name": "ret",
-                "fields": [
-                    {
-                        "name": "id",
-                        "type": "id"
-                    },
-                    {
-                        "name": "value",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "amount",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "profit",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "receive",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "return",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    }
-                ]
-            }
-        ]
-    },
-    "getmonthsumcustomer": {
-        "name": "GetMonthSumCustomer",
-        "type": "query",
-        "private": false,
-        "sys": true,
-        "fields": [
-            {
-                "name": "item",
-                "type": "enum"
-            },
-            {
-                "name": "id",
-                "type": "id"
-            }
-        ],
-        "returns": [
-            {
-                "name": "$page",
-                "fields": [
-                    {
-                        "name": "month",
-                        "type": "int"
-                    },
-                    {
-                        "name": "value",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "amount",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "profit",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "receive",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "return",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    }
-                ],
-                "order": "desc"
-            }
-        ]
-    },
-    "getcustomersumbymonth": {
-        "name": "GetCustomerSumByMonth",
-        "type": "query",
-        "private": false,
-        "sys": true,
-        "fields": [
-            {
-                "name": "item",
-                "type": "enum"
-            },
-            {
-                "name": "month",
-                "type": "int"
-            },
-            {
-                "name": "count",
-                "type": "int"
-            }
-        ],
-        "returns": [
-            {
-                "name": "ret",
-                "fields": [
-                    {
-                        "name": "id",
-                        "type": "id"
-                    },
-                    {
-                        "name": "value",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "amount",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "profit",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "receive",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    },
-                    {
-                        "name": "return",
-                        "type": "dec",
-                        "scale": 4,
-                        "precision": 18
-                    }
-                ]
-            }
-        ]
     },
     "jkordertest": {
         "name": "JkOrderTest",
