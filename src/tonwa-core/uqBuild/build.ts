@@ -44,8 +44,8 @@ export async function build(uqConfigs: UqConfig[], buildContext: UqBuildContext)
     //fs.unlinkSync(uqTsSrcPath + '/uqs.ts');
 
     //let centerHost = 'https://dev.tonwa.ca';
-    let centerHost = 'http://localhost:3000';
-    //let centerHost = 'https://tv.jkchemical.com';
+    //const centerHost = 'http://localhost:3000';
+    const centerHost = 'https://tv.jkchemical.com';
     let centerToken = undefined;
     let centerChannel = new CenterHttpChannel(buildContext.web, centerHost, centerToken);
 
