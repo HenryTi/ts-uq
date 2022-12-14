@@ -6,6 +6,7 @@ const tool_1 = require("../tool");
 const TsUQ_1 = require("./TsUQ");
 const buildFieldItem_1 = require("./buildFieldItem");
 const tools_1 = require("./tools");
+const UqConfig_1 = require("./UqConfig");
 ;
 ;
 const fieldItemReplaceProps = ['label', 'placeholder', 'widget', 'type'];
@@ -22,8 +23,8 @@ class TsUqFolder {
         //if (fs.existsSync(uqFolder) === false) {
         //	fs.mkdirSync(uqFolder);
         //}
-        let tsUq = this.buildContext.tsTemplate.tsHeader;
-        let tsUqBuilder = new TsUQ_1.TsUQ(this.buildContext, this.uqSchema, this.uqName);
+        let tsUq = UqConfig_1.tsHeader;
+        let tsUqBuilder = new TsUQ_1.TsUQ(this.buildContext, this.uqSchema, this.uqName, false);
         tsUq += tsUqBuilder.build();
         //overrideTsFile(`${uqFolder}/${this.uqAlias}.ts`, tsUq);
         (0, tools_1.overrideTsFile)(`${uqFolder}/${this.uqAlias}.ts`, tsUq);

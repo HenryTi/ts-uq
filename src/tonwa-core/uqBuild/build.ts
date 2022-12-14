@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import { env } from '../tool';
-import { lastBuildTime, red, saveTsFile, saveSrcTsFileIfNotExists, overrideTsFile } from './tools';
+import { lastBuildTime, red } from './tools';
 import { buildUqsFolder } from './uqsFolder';
 import { UqBuildContext } from './UqBuildContext';
 import { UqConfig } from "./UqConfig";
@@ -21,8 +21,6 @@ export async function build(uqConfigs: UqConfig[], buildContext: UqBuildContext)
         console.log(red, 'quit !');
         return;
     }
-
-    let { tsTemplate } = buildContext;
 
     let { uqTsSrcPath } = buildContext;
     if (!fs.existsSync(uqTsSrcPath)) {

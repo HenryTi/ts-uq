@@ -22,11 +22,13 @@ export class TsUQ {
     private buildContext: UqBuildContext;
     private readonly uqSchema: { [entity: string]: any };
     private readonly uqAlias: string;
+    private readonly idOnly: boolean;       // 仅仅生成 id 相关的api和interface
 
-    constructor(buildContext: UqBuildContext, uqSchema: { [entity: string]: any }, uqAlias: string) {
+    constructor(buildContext: UqBuildContext, uqSchema: { [entity: string]: any }, uqAlias: string, idOnly: boolean) {
         this.buildContext = buildContext;
         this.uqSchema = uqSchema;
         this.uqAlias = uqAlias;
+        this.idOnly = idOnly;
     }
 
     build() {
@@ -54,15 +56,21 @@ export interface IX {
 }
 `;
         let entityArr: Entity[] = [];
+        let newUqSchema = {};
         for (let i in this.uqSchema) {
             let schema = this.uqSchema[i];
             if (i === 'role') continue;
             let { name, type } = schema;
             if (name.indexOf('$') > 0) continue;
+            if (this.idOnly === true) {
+                // 仅留下idOnly表
+                if (idOnlyEntities[type] !== true) continue;
+            }
             let EntityType: (new (uqSchema: any, schema: any, buildContext: UqBuildContext) => Entity) = typeEntities[type];
             if (!EntityType) continue;
             let entity = new EntityType(this.uqSchema, schema, this.buildContext);
             entityArr.push(entity);
+            newUqSchema[i] = schema;
         }
 
         for (let entity of entityArr) {
@@ -120,10 +128,10 @@ export interface UqExt extends Uq {
             tsImport += ', ' + i;
         }
         tsImport += ` } from "tonwa-uq";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// import { Render, IDXEntity } from "tonwa-${this.buildContext.uiPlatform}";`;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars`
 
-        let schema = JSON.stringify(this.uqSchema, undefined, 4);
+        //let schema = JSON.stringify(this.uqSchema, undefined, 4);
+        let schema = JSON.stringify(newUqSchema, undefined, 4);
         schema = schema.replace(/\"\: \[\]/g, '": [] as any');
         return tsImport + ts + '\n\nexport const uqSchema=' + schema;
     }
@@ -625,3 +633,10 @@ const typeEntities: { [type: string]: (new (uqSchema: any, schema: any, buildCon
     'idx': IDX,
     'ix': IX,
 };
+
+const idOnlyEntities: { [type: string]: boolean } = {
+    "enum": true,
+    'const': true,
+    'id': true,
+    'tuid': true,
+}

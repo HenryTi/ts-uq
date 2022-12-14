@@ -25,7 +25,6 @@ function build(uqConfigs, buildContext) {
             console.log(tools_1.red, 'quit !');
             return;
         }
-        let { tsTemplate } = buildContext;
         let { uqTsSrcPath } = buildContext;
         if (!fs.existsSync(uqTsSrcPath)) {
             fs.mkdirSync(uqTsSrcPath);

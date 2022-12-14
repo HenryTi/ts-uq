@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const node_fetch_1 = require("node-fetch");
 const fs = require("fs");
 const tonwa_core_1 = require("./tonwa-core");
+// import { TsTemplate } from 'tonwa-core/uqBuild/TsTemplate';
 class NodeWeb extends tonwa_core_1.Web {
     fetch(url, init) {
         return (0, node_fetch_1.default)(url, init);

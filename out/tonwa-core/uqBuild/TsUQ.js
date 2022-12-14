@@ -18,10 +18,11 @@ const fieldTypeMap = {
 };
 const sysFields = ['id', 'main', 'row', 'no', '$create', '$update', '$owner'];
 class TsUQ {
-    constructor(buildContext, uqSchema, uqAlias) {
+    constructor(buildContext, uqSchema, uqAlias, idOnly) {
         this.buildContext = buildContext;
         this.uqSchema = uqSchema;
         this.uqAlias = uqAlias;
+        this.idOnly = idOnly;
     }
     build() {
         let tsImport = `
@@ -48,6 +49,7 @@ export interface IX {
 }
 `;
         let entityArr = [];
+        let newUqSchema = {};
         for (let i in this.uqSchema) {
             let schema = this.uqSchema[i];
             if (i === 'role')
@@ -55,11 +57,17 @@ export interface IX {
             let { name, type } = schema;
             if (name.indexOf('$') > 0)
                 continue;
+            if (this.idOnly === true) {
+                // 仅留下idOnly表
+                if (idOnlyEntities[type] !== true)
+                    continue;
+            }
             let EntityType = typeEntities[type];
             if (!EntityType)
                 continue;
             let entity = new EntityType(this.uqSchema, schema, this.buildContext);
             entityArr.push(entity);
+            newUqSchema[i] = schema;
         }
         for (let entity of entityArr) {
             let intf = entity.interface();
@@ -117,9 +125,9 @@ export interface UqExt extends Uq {
             tsImport += ', ' + i;
         }
         tsImport += ` } from "tonwa-uq";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// import { Render, IDXEntity } from "tonwa-${this.buildContext.uiPlatform}";`;
-        let schema = JSON.stringify(this.uqSchema, undefined, 4);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars`;
+        //let schema = JSON.stringify(this.uqSchema, undefined, 4);
+        let schema = JSON.stringify(newUqSchema, undefined, 4);
         schema = schema.replace(/\"\: \[\]/g, '": [] as any');
         return tsImport + ts + '\n\nexport const uqSchema=' + schema;
     }
@@ -605,5 +613,11 @@ const typeEntities = {
     'id': ID,
     'idx': IDX,
     'ix': IX,
+};
+const idOnlyEntities = {
+    "enum": true,
+    'const': true,
+    'id': true,
+    'tuid': true,
 };
 //# sourceMappingURL=TsUQ.js.map

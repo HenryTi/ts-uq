@@ -1,31 +1,13 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import { UqBuildContext } from './UqBuildContext';
 import { getNameFromConfig, overrideTsFile } from './tools';
-import { TsUqFolder } from './TsUqFolder';
 import { UqSchema } from './build';
+import { tsHeader } from './UqConfig';
+import { TsUQ } from './TsUQ';
 
 export async function buildUqsFolder(buildContext: UqBuildContext, uqSchemas: UqSchema[]) {
-    let { uqTsSrcPath, tsTemplate } = buildContext;
+    let { uqTsSrcPath } = buildContext;
     let uqsFolder = uqTsSrcPath + '/uqs';
-    /*
-    let uqErrors = await uqsLoader.build();
-    if (uqErrors) {
-        throw new Error('error in uqsLoader.build()');
-    }
-    let { uqsMan } = uqsLoader;
-    let uqMans = uqsMan.getUqMans();
-
-    let promiseArr: Promise<void>[] = [];
-    if (uqErrors) {
-        console.error(uqErrors.join('\n'));
-    }
-
-    for (let uq of uqMans) {
-        promiseArr.push(loadUqEntities(uq));
-    }
-    await Promise.all(promiseArr);
-    */
 
     let tsUqsIndexHeader = '';
     let tsUqsIndexContent: string;
@@ -46,42 +28,42 @@ export async function buildUqsFolder(buildContext: UqBuildContext, uqSchemas: Uq
     else {
         tsUqsIndexContent = `\n\nexport interface UQs {`;
     }
-    tsUqsIndexHeader += tsTemplate.tsHeader;
+    tsUqsIndexHeader += tsHeader; // tsTemplate.tsHeader;
     let tsUqsIndexReExport = '\n';
-    //let tsUqsUI = `\n\nexport function setUI(uqs:UQs) {`;
-    for (let uqSchema of uqSchemas) {
-        let { config, schema } = uqSchema;
+    let len = uqSchemas.length;
+    for (let i = 0; i < len; i++) {
+        let { config, schema } = uqSchemas[i];
         let { fullName, devName: o1, uqName: n1 } = getNameFromConfig(config);
         let uqAlias = o1 + n1;
-        let tsUqFolder = new TsUqFolder(buildContext, schema, fullName, uqsFolder, uqAlias);
-        // buildTsUqFolder(uq, uqsFolder, uqAlias);
-        tsUqFolder.build();
+        // let tsUqFolder = new TsUqFolder(buildContext, schema, fullName, uqsFolder, uqAlias, idOnly);
+        // tsUqFolder.build();
+        // let uqFolder = this.uqsFolder;
+        // let tsUq = tsHeader + buildTsUq(schema, fullName);
+        let { "id-only": idOnly } = config;
+        if (i === 0) {
+            // 第一个uq默认全interface
+            if (idOnly === undefined) idOnly = false;
+        }
+        else {
+            // 之后的uq默认仅ID interface
+            if (idOnly === undefined) idOnly = true;
+        }
+
+        let tsUqBuilder = new TsUQ(buildContext, schema, fullName, idOnly);
+        let tsUq = tsHeader + tsUqBuilder.build();
+
+        // let tsUqBuilder = new TsUQ(this.buildContext, this.uqSchema, this.uqName);
+        // tsUq += tsUqBuilder.build();
+        overrideTsFile(`${uqsFolder}/${uqAlias}.ts`, tsUq);
 
         tsUqsIndexHeader += `\nimport * as ${uqAlias} from './${uqAlias}';`;
         tsUqsIndexContent += `\n\t${uqAlias}: ${uqAlias}.UqExt;`;
         tsUqsIndexSchema += `\n\t"${fullName}": ${uqAlias}.uqSchema,`;
         tsUqsIndexReExport += `\nexport * as ${uqAlias} from './${uqAlias}';`;
-        //tsUqsUI += `\n\t${uqAlias}.setUI(uqs.${uqAlias});`;
     }
     if (!fs.existsSync(uqsFolder)) {
         fs.mkdirSync(uqsFolder);
     }
-    /*
-    else {
-        try {
-            let files = fs.readdirSync(uqsFolder);
-            for (const file of files) {
-                let fullPath = path.join(uqsFolder, file);
-                if (fs.lstatSync(fullPath).isFile() === true) {
-                    fs.unlinkSync(fullPath);
-                }
-            }
-        }
-        catch (err) {
-            throw err;
-        }
-    }
-    */
 
     overrideTsFile(
         uqsIndexFile,
@@ -90,4 +72,12 @@ export async function buildUqsFolder(buildContext: UqBuildContext, uqSchemas: Uq
         + tsUqsIndexSchema + '\n}'
         + tsUqsIndexReExport + '\n'
     );
+    /*
+        function buildTsUq(uqSchema: any, uqName: string): string {
+            // let uqFolder = this.uqsFolder;
+            let tsUqBuilder = new TsUQ(buildContext, uqSchema, uqName);
+            return tsHeader + tsUqBuilder.build();
+            // overrideTsFile(`${uqFolder}/${this.uqAlias}.ts`, tsUq);
+        }
+    */
 }

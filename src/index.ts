@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import * as fs from 'fs';
 import { build, DevConfig, UqBuildContext, UqConfig, Web } from './tonwa-core';
-import { TsTemplate } from 'tonwa-core/uqBuild/TsTemplate';
+// import { TsTemplate } from 'tonwa-core/uqBuild/TsTemplate';
 
 class NodeWeb extends Web {
     fetch(url: string, init?: any): Promise<any> {
