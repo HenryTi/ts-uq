@@ -29,22 +29,6 @@ function build(uqConfigs, buildContext) {
         if (!fs.existsSync(uqTsSrcPath)) {
             fs.mkdirSync(uqTsSrcPath);
         }
-        //let tsIndex = tsTemplate.tsIndex;
-        //overrideTsFile(`${buildContext.uqTsSrcPath}/index.ts`, tsIndex);
-        /*
-        let tsCApp = tsTemplate.tsCApp;
-        saveSrcTsFileIfNotExists(buildContext, 'CApp', 'ts', tsCApp);
-        let tsCBase = tsTemplate.tsCBase;
-        saveTsFile(buildContext, 'CBase', tsCBase);
-        let tsVMain = tsTemplate.tsVMain;
-        saveSrcTsFileIfNotExists(buildContext, 'VMain', 'tsx', tsVMain);
-        let tsApp = tsTemplate.tsApp;
-        saveSrcTsFileIfNotExists(buildContext, 'App', 'tsx', tsApp);
-        */
-        //saveTsFile(buildContext, 'uqs', '');
-        //fs.unlinkSync(uqTsSrcPath + '/uqs.ts');
-        //let centerHost = 'https://dev.tonwa.ca';
-        //const centerHost = 'http://localhost:3000';
         const centerHost = 'https://tv.jkchemical.com';
         let centerToken = undefined;
         let centerChannel = new httpChannel_1.CenterHttpChannel(buildContext.web, centerHost, centerToken);
@@ -52,10 +36,18 @@ function build(uqConfigs, buildContext) {
         let retUqSchemas = yield Promise.all(promises);
         let uqSchemas = [];
         for (let i = 0; i < retUqSchemas.length; i++) {
-            uqSchemas.push({
-                config: uqConfigs[i],
-                schema: JSON.parse(retUqSchemas[i]),
-            });
+            const schemaText = retUqSchemas[i];
+            try {
+                const schema = JSON.parse(schemaText);
+                uqSchemas.push({
+                    config: uqConfigs[i],
+                    schema,
+                });
+            }
+            catch (err) {
+                console.error('parse schema error', err);
+                console.log('schema', schemaText);
+            }
         }
         yield (0, uqsFolder_1.buildUqsFolder)(buildContext, uqSchemas);
     });
