@@ -7,6 +7,10 @@
         "jk": {
             "name": "百灵威系统工程部",
             "alias": "jk"
+        },
+        "jksoft": {
+            "name": "jksoft",
+            "alias": "js"
         }
     },
     "uqs": [
@@ -14,6 +18,11 @@
             "dev": "jk",
             "name": "product",
             "alias": "Product"
+        },
+        {
+            "dev": "jksoft",
+            "name": "ticket",
+            "alias": "Ticket"
         }
     ],
     "uqs1": [

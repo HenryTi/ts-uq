@@ -619,5 +619,7 @@ const idOnlyEntities = {
     'const': true,
     'id': true,
     'tuid': true,
+    'action': true,
+    'query': true,
 };
 //# sourceMappingURL=TsUQ.js.map

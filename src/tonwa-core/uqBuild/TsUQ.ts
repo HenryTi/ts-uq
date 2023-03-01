@@ -639,4 +639,6 @@ const idOnlyEntities: { [type: string]: boolean } = {
     'const': true,
     'id': true,
     'tuid': true,
+    'action': true,
+    'query': true,
 }
