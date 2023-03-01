@@ -24,13 +24,13 @@ function saveTsFile(context, fileName, content, suffix = 'ts') {
     }
     fs.writeFileSync(tsFile, content);
     exports.lastBuildTime = Date.now();
-    console.log(exports.red, `${fileName} is built`);
+    console.log(exports.red, `${fileName} built`);
 }
 exports.saveTsFile = saveTsFile;
 function overrideTsFile(path, content) {
     fs.writeFileSync(path, content);
     exports.lastBuildTime = Date.now();
-    console.log(exports.red, `${path} is built`);
+    console.log(exports.red, `${path} built`);
 }
 exports.overrideTsFile = overrideTsFile;
 function saveTsFileIfNotExists(tsFilePath, content) {
