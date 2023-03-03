@@ -618,7 +618,8 @@ const idOnlyEntities = {
     "enum": true,
     'const': true,
     'id': true,
-    'tuid': true,
+    'ix': true,
+    'idx': true,
     'action': true,
     'query': true,
 };

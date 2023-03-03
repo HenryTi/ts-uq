@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JsTicket = exports.JkProduct = exports.uqsSchema = void 0;
-//=== UqApp builder created on Tue Feb 28 2023 20:25:19 GMT-0500 (Eastern Standard Time) ===//
+//=== UqApp builder created on Fri Mar 03 2023 16:06:28 GMT-0500 (Eastern Standard Time) ===//
 const JkProduct = require("./JkProduct");
 const JsTicket = require("./JsTicket");
 exports.uqsSchema = {
