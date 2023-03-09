@@ -446,10 +446,10 @@ class IX extends IDBase {
 class Act extends Entity {
     typeCaption() { return 'Action'; }
     interface() {
-        let { fields, arrFields, returns } = this.schema;
+        let { fields, arrs, returns } = this.schema;
         let ts = `export interface Param${(0, tool_1.capitalCase)(this.entityName)} {`;
         ts += this.buildFields(fields);
-        ts += this.buildArrs(arrFields);
+        ts += this.buildArrs(arrs);
         ts += '\n}\n';
         ts += this.buildReturns(returns);
         return ts;

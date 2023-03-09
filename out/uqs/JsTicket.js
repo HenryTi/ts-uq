@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uqSchema = void 0;
+exports.uqSchema = exports.ContactType = void 0;
+var ContactType;
+(function (ContactType) {
+    ContactType[ContactType["vendor"] = 1] = "vendor";
+    ContactType[ContactType["customer"] = 2] = "customer";
+})(ContactType = exports.ContactType || (exports.ContactType = {}));
 exports.uqSchema = {
     "$role_my": {
         "name": "$role_my",
@@ -304,34 +309,18 @@ exports.uqSchema = {
             }
         ]
     },
-    "history": {
-        "name": "History",
-        "type": "id",
+    "booksheetpurchase": {
+        "name": "BookSheetPurchase",
+        "type": "action",
         "private": false,
         "sys": true,
         "fields": [
             {
                 "name": "id",
-                "type": "id",
-                "null": false
-            },
-            {
-                "name": "project",
-                "type": "id"
-            },
-            {
-                "name": "value",
-                "type": "datatype"
-            },
-            {
-                "name": "ref",
                 "type": "id"
             }
         ],
-        "keys": [],
-        "global": false,
-        "idType": 3,
-        "isMinute": true
+        "returns": []
     },
     "saveproduct": {
         "name": "SaveProduct",
@@ -386,6 +375,164 @@ exports.uqSchema = {
                     {
                         "name": "id",
                         "type": "id"
+                    }
+                ]
+            }
+        ]
+    },
+    "savesheetstorein": {
+        "name": "SaveSheetStoreIn",
+        "type": "action",
+        "private": false,
+        "sys": true,
+        "fields": [],
+        "arrs": [
+            {
+                "name": "details",
+                "fields": [
+                    {
+                        "name": "sheet",
+                        "type": "id"
+                    },
+                    {
+                        "name": "id",
+                        "type": "id"
+                    },
+                    {
+                        "name": "value",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    }
+                ]
+            }
+        ],
+        "returns": [
+            {
+                "name": "ret",
+                "fields": [
+                    {
+                        "name": "id",
+                        "type": "id"
+                    }
+                ]
+            }
+        ]
+    },
+    "history": {
+        "name": "History",
+        "type": "id",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "id",
+                "type": "id",
+                "null": false
+            },
+            {
+                "name": "project",
+                "type": "id"
+            },
+            {
+                "name": "value",
+                "type": "dec",
+                "scale": 4,
+                "precision": 18
+            },
+            {
+                "name": "ref",
+                "type": "id"
+            }
+        ],
+        "keys": [],
+        "global": false,
+        "idType": 3,
+        "isMinute": true
+    },
+    "getdetails": {
+        "name": "GetDetails",
+        "type": "query",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "id",
+                "type": "id"
+            }
+        ],
+        "returns": [
+            {
+                "name": "ret",
+                "fields": [
+                    {
+                        "name": "id",
+                        "type": "id",
+                        "null": false
+                    },
+                    {
+                        "name": "sheet",
+                        "type": "id"
+                    },
+                    {
+                        "name": "item",
+                        "type": "id"
+                    },
+                    {
+                        "name": "value",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    }
+                ]
+            }
+        ]
+    },
+    "getdetailqpas": {
+        "name": "GetDetailQPAs",
+        "type": "query",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "id",
+                "type": "id"
+            }
+        ],
+        "returns": [
+            {
+                "name": "ret",
+                "fields": [
+                    {
+                        "name": "id",
+                        "type": "id",
+                        "null": false
+                    },
+                    {
+                        "name": "sheet",
+                        "type": "id"
+                    },
+                    {
+                        "name": "item",
+                        "type": "id"
+                    },
+                    {
+                        "name": "quantity",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "price",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
+                    },
+                    {
+                        "name": "amount",
+                        "type": "dec",
+                        "scale": 4,
+                        "precision": 18
                     }
                 ]
             }
@@ -469,6 +616,35 @@ exports.uqSchema = {
             }
         ]
     },
+    "searchstorein": {
+        "name": "SearchStoreIn",
+        "type": "query",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "key",
+                "type": "char",
+                "size": 50
+            }
+        ],
+        "returns": [
+            {
+                "name": "$page",
+                "fields": [
+                    {
+                        "name": "id",
+                        "type": "id"
+                    },
+                    {
+                        "name": "target",
+                        "type": "id"
+                    }
+                ],
+                "order": "asc"
+            }
+        ]
+    },
     "product": {
         "name": "Product",
         "type": "id",
@@ -535,6 +711,16 @@ exports.uqSchema = {
         "idType": 3,
         "isMinute": false
     },
+    "contacttype": {
+        "name": "ContactType",
+        "type": "enum",
+        "private": false,
+        "sys": true,
+        "values": {
+            "vendor": 1,
+            "customer": 2
+        }
+    },
     "batch": {
         "name": "Batch",
         "type": "id",
@@ -579,8 +765,8 @@ exports.uqSchema = {
         "idType": 3,
         "isMinute": true
     },
-    "purchasemain": {
-        "name": "PurchaseMain",
+    "sheetpurchase": {
+        "name": "SheetPurchase",
         "type": "id",
         "private": false,
         "sys": true,
@@ -611,8 +797,8 @@ exports.uqSchema = {
         "idType": 3,
         "isMinute": true
     },
-    "salemain": {
-        "name": "SaleMain",
+    "sheetsale": {
+        "name": "SheetSale",
         "type": "id",
         "private": false,
         "sys": true,
@@ -643,6 +829,48 @@ exports.uqSchema = {
         "idType": 3,
         "isMinute": true
     },
+    "sheetstorein": {
+        "name": "SheetStoreIn",
+        "type": "id",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "id",
+                "type": "id",
+                "null": false
+            },
+            {
+                "name": "operator",
+                "type": "id"
+            }
+        ],
+        "keys": [],
+        "global": false,
+        "idType": 3,
+        "isMinute": true
+    },
+    "sheetstoreout": {
+        "name": "SheetStoreOut",
+        "type": "id",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "id",
+                "type": "id",
+                "null": false
+            },
+            {
+                "name": "operator",
+                "type": "id"
+            }
+        ],
+        "keys": [],
+        "global": false,
+        "idType": 3,
+        "isMinute": true
+    },
     "detail": {
         "name": "Detail",
         "type": "id",
@@ -655,7 +883,7 @@ exports.uqSchema = {
                 "null": false
             },
             {
-                "name": "main",
+                "name": "sheet",
                 "type": "id"
             },
             {
@@ -664,13 +892,79 @@ exports.uqSchema = {
             },
             {
                 "name": "value",
-                "type": "datatype"
+                "type": "dec",
+                "scale": 4,
+                "precision": 18
             }
         ],
         "keys": [],
         "global": false,
         "idType": 3,
         "isMinute": true
+    },
+    "detailqpa": {
+        "name": "DetailQPA",
+        "type": "id",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "id",
+                "type": "id",
+                "null": false
+            },
+            {
+                "name": "sheet",
+                "type": "id"
+            },
+            {
+                "name": "item",
+                "type": "id"
+            },
+            {
+                "name": "quantity",
+                "type": "dec",
+                "scale": 4,
+                "precision": 18
+            },
+            {
+                "name": "price",
+                "type": "dec",
+                "scale": 4,
+                "precision": 18
+            },
+            {
+                "name": "amount",
+                "type": "dec",
+                "scale": 4,
+                "precision": 18
+            }
+        ],
+        "keys": [],
+        "global": false,
+        "idType": 3,
+        "isMinute": true
+    },
+    "ixmysheet": {
+        "name": "IxMySheet",
+        "type": "ix",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "ix",
+                "type": "id",
+                "ID": "$user",
+                "tuid": "$user"
+            },
+            {
+                "name": "xi",
+                "type": "id"
+            }
+        ],
+        "ixx": false,
+        "hasSort": false,
+        "xiType": 0
     }
 };
 //# sourceMappingURL=JsTicket.js.map
