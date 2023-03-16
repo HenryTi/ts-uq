@@ -69,6 +69,14 @@ export interface IX {
             entityArr.push(entity);
             newUqSchema[i] = schema;
         }
+        ts += '\nexport enum EnumID {\n';
+        for (let entity of entityArr) {
+            let enm = entity.buildEnum();
+            if (enm === undefined)
+                continue;
+            ts += '\t' + enm + ',\n';
+        }
+        ts += '}\n';
         for (let entity of entityArr) {
             let intf = entity.interface();
             if (intf === undefined)
@@ -110,17 +118,6 @@ export interface UqExt extends Uq {
             }
         }
         ts += '\n}\n';
-        /*
-                ts += `
-        export function assign(uq: any, to:string, from:any): void {
-            let hasEntity = uq.hasEntity(to);
-            if (hasEntity === false) {
-                return;
-            }
-            Object.assign((uq as any)[to], from);
-        }
-        `;
-        */
         for (let i in typeCaptions) {
             tsImport += ', ' + i;
         }
@@ -204,7 +201,7 @@ class Entity {
         return ts;
     }
     buildEnum() {
-        return;
+        return undefined;
     }
     buildInternalEnum() {
         let { values } = this.schema;
@@ -338,6 +335,9 @@ class ID extends IDBase {
     }
     actsInterface() {
         return `${(0, tool_1.camelCase)(this.entityName)}?: ${(0, tool_1.capitalCase)(this.entityName)}InActs`;
+    }
+    buildEnum() {
+        return `${this.entityName} = '${this.entityName.toLowerCase()}'`;
     }
     isOptionalField(field) {
         return sysFields.indexOf(field.name) >= 0;
