@@ -20,25 +20,6 @@ const messageHub_1 = require("./messageHub");
 const httpChannelUI_1 = require("./httpChannelUI");
 const host_1 = require("./host");
 class Web {
-    // -- end -------------------
-    constructor() {
-        this.centerToken = undefined;
-        this.loginedUserId = 0;
-        this.channelUIs = {};
-        this.channelNoUIs = {};
-        this.channels = {};
-        this.centerApi = new centerApi_1.CenterApi(this, 'tv/', undefined);
-        this.appBridge = new appBridge_1.AppBridge(this);
-        this.userApi = new uqApi_1.UserApi(this, 'tv/', undefined);
-        this.uqTokenApi = new uqApi_1.UqTokenApi(this, 'tv/tie/', undefined);
-        this.callCenterapi = new uqApi_1.CallCenterApi(this, '', undefined);
-        let unitId = 0;
-        this.unitxApi = new uqApi_1.UnitxApi(this, unitId);
-        this.guestApi = new guestApi_1.GuestApi(this, 'tv/guest/', undefined);
-        this.messageHub = new messageHub_1.MessageHub(this);
-        //this.wsBridge = new WsBridge(this);
-        this.host = new host_1.Host();
-    }
     // ----- 从nav搬移过来的内容
     // ===== nav搬移内容结束
     // abstract navInit(): Promise<void>
@@ -81,6 +62,25 @@ class Web {
     }
     startWait() {
         //throw new Error('Method not implemented.');
+    }
+    // -- end -------------------
+    constructor() {
+        this.centerToken = undefined;
+        this.loginedUserId = 0;
+        this.channelUIs = {};
+        this.channelNoUIs = {};
+        this.channels = {};
+        this.centerApi = new centerApi_1.CenterApi(this, 'tv/', undefined);
+        this.appBridge = new appBridge_1.AppBridge(this);
+        this.userApi = new uqApi_1.UserApi(this, 'tv/', undefined);
+        this.uqTokenApi = new uqApi_1.UqTokenApi(this, 'tv/tie/', undefined);
+        this.callCenterapi = new uqApi_1.CallCenterApi(this, '', undefined);
+        let unitId = 0;
+        this.unitxApi = new uqApi_1.UnitxApi(this, unitId);
+        this.guestApi = new guestApi_1.GuestApi(this, 'tv/guest/', undefined);
+        this.messageHub = new messageHub_1.MessageHub(this);
+        //this.wsBridge = new WsBridge(this);
+        this.host = new host_1.Host();
     }
     logoutApis() {
         this.channelUIs = {};

@@ -35,12 +35,9 @@ export async function buildUqsFolder(buildContext: UqBuildContext, uqSchemas: Uq
         let { config, schema } = uqSchemas[i];
         let { fullName, devName: o1, uqName: n1 } = getNameFromConfig(config);
         let uqAlias = o1 + n1;
-        // let tsUqFolder = new TsUqFolder(buildContext, schema, fullName, uqsFolder, uqAlias, idOnly);
-        // tsUqFolder.build();
-        // let uqFolder = this.uqsFolder;
-        // let tsUq = tsHeader + buildTsUq(schema, fullName);
         let { "id-only": idOnly } = config;
         if (i === 0) {
+            uqAlias = 'UqDefault';
             // 第一个uq默认全interface
             if (idOnly === undefined) idOnly = false;
         }

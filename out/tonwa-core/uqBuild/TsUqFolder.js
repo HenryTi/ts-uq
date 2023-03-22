@@ -178,35 +178,32 @@ export * from './${this.uqAlias}';
     }
     ;
     buildIDFields(schema) {
-        var _a;
         let ret = {};
         let { keys, fields } = schema;
         for (let f of fields) {
             let { name } = f;
-            let isKey = ((_a = keys) === null || _a === void 0 ? void 0 : _a.findIndex(v => v.name === name)) >= 0;
+            let isKey = (keys === null || keys === void 0 ? void 0 : keys.findIndex(v => v.name === name)) >= 0;
             ret[name] = (0, buildFieldItem_1.buildFieldItem)(f, isKey);
         }
         return ret;
     }
     buildIDXFields(schema) {
-        var _a;
         let ret = {};
         let { keys, fields } = schema;
         for (let f of fields) {
             let { name } = f;
-            let isKey = ((_a = keys) === null || _a === void 0 ? void 0 : _a.findIndex(v => v.name === name)) >= 0;
+            let isKey = (keys === null || keys === void 0 ? void 0 : keys.findIndex(v => v.name === name)) >= 0;
             ret[name] = (0, buildFieldItem_1.buildFieldItem)(f, isKey);
         }
         return ret;
     }
     ;
     buildIXFields(schema) {
-        var _a;
         let ret = {};
         let { keys, fields } = schema;
         for (let f of fields) {
             let { name } = f;
-            let isKey = ((_a = keys) === null || _a === void 0 ? void 0 : _a.findIndex(v => v.name === name)) >= 0;
+            let isKey = (keys === null || keys === void 0 ? void 0 : keys.findIndex(v => v.name === name)) >= 0;
             ret[name] = (0, buildFieldItem_1.buildFieldItem)(f, isKey);
         }
         return ret;
