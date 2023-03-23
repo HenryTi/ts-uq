@@ -321,7 +321,7 @@ class ID extends IDBase {
             }
         }
         if (!s) s = 'any';
-        let q: string = this.isOptionalField(field) === true ? '?' : '';
+        let q: string = isKey === false && this.isOptionalField(field) === true ? '?' : '';
         return `\n${'\t'.repeat(indent)}${name}${q}: ${s};`;
     }
     interface(): string {
