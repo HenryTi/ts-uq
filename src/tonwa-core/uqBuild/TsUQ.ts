@@ -153,11 +153,11 @@ abstract class Entity {
     actsInterface(): string { return undefined; }
     typeCaption(): string { return undefined; }
 
-    protected buildFields(fields: Field[], indent: number = 1) {
+    protected buildFields(fields: Field[], isKey: boolean, indent: number = 1) {
         if (!fields) return '';
         let ts = '';
         for (let f of fields) {
-            ts += this.buildField(f, indent);
+            ts += this.buildField(f, isKey, indent);
         }
         return ts;
     }
@@ -170,12 +170,12 @@ abstract class Entity {
         return false;
     }
 
-    protected buildField(field: Field, indent: number = 1) {
+    protected buildField(field: Field, isKey: boolean, indent: number = 1) {
         if (this.isOmitted(field) === true) return '';
         let { name, type } = field;
         let s = fieldTypeMap[type];
         if (!s) s = 'any';
-        let q: string = this.isOptionalField(field) === true ? '?' : '';
+        let q: string = isKey === false && this.isOptionalField(field) === true ? '?' : '';
         return `\n${'\t'.repeat(indent)}${name}${q}: ${s};`;
     }
 
@@ -184,7 +184,7 @@ abstract class Entity {
         let ts = '\n';
         for (let af of arrFields) {
             ts += `\t${camelCase(af.name)}: {`;
-            ts += this.buildFields(af.fields, 2);
+            ts += this.buildFields(af.fields, false, 2);
             ts += '\n\t}[];\n';
         }
         return ts;
@@ -199,7 +199,7 @@ abstract class Entity {
             let { name: retName, fields } = ret;
             retName = capitalCase(retName);
             ts += `export interface Return${name}${retName} {`;
-            ts += this.buildFields(ret.fields);
+            ts += this.buildFields(ret.fields, false);
             ts += '\n}\n';
         }
 
@@ -295,12 +295,12 @@ class ID extends IDBase {
         if (this.isInActs === true) {
             ts += '\n\tID?: UqID<any>;';
         }
-        ts += this.buildFields(keys);
-        ts += this.buildFields(others);
+        ts += this.buildFields(keys, true);
+        ts += this.buildFields(others, false);
         ts += '\n}';
         return ts;
     }
-    protected buildField(field: Field, indent: number = 1) {
+    protected buildField(field: Field, isKey: boolean, indent: number = 1) {
         if (this.isOmitted(field) === true) return '';
         let { name, type } = field;
         let s = fieldTypeMap[type];
@@ -430,7 +430,7 @@ class IX extends IDBase {
     interface(): string {
         let { fields } = this.schema;
         let ts = `export interface ${capitalCase(this.entityName)} extends IX {`;
-        ts += this.buildFields(fields);
+        ts += this.buildFields(fields, false);
         ts += '\n}';
         return ts;
     }
@@ -455,7 +455,7 @@ class Act extends Entity {
     interface(): string {
         let { fields, arrs, returns } = this.schema;
         let ts = `export interface Param${capitalCase(this.entityName)} {`;
-        ts += this.buildFields(fields);
+        ts += this.buildFields(fields, false);
         ts += this.buildArrs(arrs);
         ts += '\n}\n';
         ts += this.buildReturns(returns);
@@ -471,7 +471,7 @@ class Query extends Entity {
     interface(): string {
         let { fields, returns } = this.schema;
         let ts = `export interface Param${capitalCase(this.entityName)} {`;
-        ts += this.buildFields(fields);
+        ts += this.buildFields(fields, false);
         ts += '\n}\n';
         ts += this.buildReturns(returns);
         return ts;
@@ -487,7 +487,7 @@ class Tuid extends Entity {
         let { fields } = this.schema;
         let ts = `export interface Tuid${capitalCase(this.entityName)} {`;
         ts += `\n\tid?: number;`;
-        ts += this.buildFields(fields);
+        ts += this.buildFields(fields, false);
         ts += '\n}';
         return ts;
     }
@@ -501,7 +501,7 @@ class Book extends Entity {
     interface(): string {
         let { fields, returns } = this.schema;
         let ts = `export interface Param${capitalCase(this.entityName)} {`;
-        ts += this.buildFields(fields);
+        ts += this.buildFields(fields, false);
         ts += '\n}\n';
         ts += this.buildReturns(returns);
         return ts;
@@ -523,7 +523,7 @@ class History extends Entity {
     interface(): string {
         let { fields, returns } = this.schema;
         let ts = `export interface Param${capitalCase(this.entityName)} {`;
-        ts += this.buildFields(fields);
+        ts += this.buildFields(fields, false);
         ts += '\n}\n';
         ts += this.buildReturns(returns);
         return ts;
@@ -591,7 +591,7 @@ class Sheet extends Entity {
     interface(): string {
         let { fields, arrFields, verify } = this.schema;
         let ts = `export interface Sheet${capitalCase(this.entityName)} {`;
-        ts += this.buildFields(fields);
+        ts += this.buildFields(fields, false);
         ts += this.buildArrs(arrFields);
         ts += '}';
 
@@ -601,7 +601,7 @@ class Sheet extends Entity {
             for (let item of returns) {
                 let { name: arrName, fields } = item;
                 ts += '\n\t' + arrName + ': {';
-                ts += this.buildFields(fields, 2);
+                ts += this.buildFields(fields, false, 2);
                 ts += '\n\t}[];';
             }
             ts += '\n}';
