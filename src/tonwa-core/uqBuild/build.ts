@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as jsonpack from 'jsonpack';
 import { env } from '../tool';
 import { lastBuildTime, red } from './tools';
 import { buildUqsFolder } from './uqsFolder';
@@ -36,7 +37,7 @@ export async function build(uqConfigs: UqConfig[], buildContext: UqBuildContext)
     for (let i = 0; i < retUqSchemas.length; i++) {
         const schemaText = retUqSchemas[i];
         try {
-            const schema = JSON.parse(schemaText);
+            const schema = schemaText[0] === '{' ? JSON.parse(schemaText) : jsonpack.unpack(schemaText);
             uqSchemas.push({
                 config: uqConfigs[i],
                 schema,

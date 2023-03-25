@@ -274,6 +274,9 @@ abstract class Entity {
     }
 }
 
+class Biz extends Entity {
+}
+
 abstract class IDBase extends Entity {
 }
 
@@ -633,6 +636,7 @@ const typeEntities: { [type: string]: (new (uqSchema: any, schema: any, buildCon
     'id': ID,
     'idx': IDX,
     'ix': IX,
+    'biz': Biz,
 };
 
 const idOnlyEntities: { [type: string]: boolean } = {

@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.build = void 0;
 const fs = require("fs");
+const jsonpack = require("jsonpack");
 const tool_1 = require("../tool");
 const tools_1 = require("./tools");
 const uqsFolder_1 = require("./uqsFolder");
@@ -38,7 +39,7 @@ function build(uqConfigs, buildContext) {
         for (let i = 0; i < retUqSchemas.length; i++) {
             const schemaText = retUqSchemas[i];
             try {
-                const schema = JSON.parse(schemaText);
+                const schema = schemaText[0] === '{' ? JSON.parse(schemaText) : jsonpack.unpack(schemaText);
                 uqSchemas.push({
                     config: uqConfigs[i],
                     schema,

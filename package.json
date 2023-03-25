@@ -11,9 +11,11 @@
     "author": "henry",
     "license": "ISC",
     "dependencies": {
+        "@types/jsonpack": "^1.1.2",
         "@types/node": "^17.0.19",
         "@types/node-fetch": "^2.6.1",
         "@types/typescript": "^2.0.0",
+        "jsonpack": "^1.1.5",
         "jwt-decode": "^3.1.2",
         "node": "^17.4.0",
         "node-fetch": "^2.6.1"

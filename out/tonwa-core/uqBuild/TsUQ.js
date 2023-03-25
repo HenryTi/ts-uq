@@ -265,6 +265,8 @@ class Entity {
         return ts += '\n}';
     }
 }
+class Biz extends Entity {
+}
 class IDBase extends Entity {
 }
 class ID extends IDBase {
@@ -613,6 +615,7 @@ const typeEntities = {
     'id': ID,
     'idx': IDX,
     'ix': IX,
+    'biz': Biz,
 };
 const idOnlyEntities = {
     "enum": true,
