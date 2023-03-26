@@ -62,13 +62,19 @@ export interface IX {
             let schema = this.uqSchema[i];
             if (i === 'role') continue;
             let { name, type } = schema;
-            if (name.indexOf('$') > 0) continue;
-            if (this.idOnly === true) {
-                // 仅留下idOnly表
-                if (idOnlyEntities[type] !== true) continue;
+            let EntityType: (new (uqSchema: any, schema: any, buildContext: UqBuildContext) => Entity);
+            if (name !== undefined) {
+                if (name.indexOf('$') > 0) continue;
+                if (this.idOnly === true) {
+                    // 仅留下idOnly表
+                    if (idOnlyEntities[type] !== true) continue;
+                }
+                EntityType = typeEntities[type];
+                if (!EntityType) continue;
             }
-            let EntityType: (new (uqSchema: any, schema: any, buildContext: UqBuildContext) => Entity) = typeEntities[type];
-            if (!EntityType) continue;
+            else {
+                EntityType = Biz;
+            }
             let entity = new EntityType(this.uqSchema, schema, this.buildContext);
             entityArr.push(entity);
             newUqSchema[i] = schema;
