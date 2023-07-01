@@ -1,6 +1,0 @@
--- 记录itemhistoryid，用于将数据交换到内部系统
-ID ExportItemHistory LOCAL(
-    ID,
-    itemHistoryId ID ItemHistory,
-    sys (create),
-);

@@ -1,8 +1,0 @@
-ID #returnPoint GLOBAL (
-    id,
-    orderMain ID,
-    amount dec(18, 4),
-    note char(100),
-    creator ID [$user],
-    createDate  datetime
-); 

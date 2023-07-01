@@ -57,25 +57,27 @@ export interface IX {
 `;
         let entityArr: Entity[] = [];
         let newUqSchema = {};
+        let biz: Biz;
 
         for (let i in this.uqSchema) {
             let schema = this.uqSchema[i];
             if (i === 'role') continue;
             let { name, type } = schema;
-            let EntityType: (new (uqSchema: any, schema: any, buildContext: UqBuildContext) => Entity);
+            let entity: Entity;
             if (name !== undefined) {
                 if (name.indexOf('$') > 0) continue;
                 if (this.idOnly === true) {
                     // 仅留下idOnly表
                     if (idOnlyEntities[type] !== true) continue;
                 }
-                EntityType = typeEntities[type];
+                let EntityType = typeEntities[type];
                 if (!EntityType) continue;
+                entity = new EntityType(this.uqSchema, schema, this.buildContext);
             }
             else {
-                EntityType = Biz;
+                entity = biz = new Biz(this.uqSchema, schema, this.buildContext);
             }
-            let entity = new EntityType(this.uqSchema, schema, this.buildContext);
+
             entityArr.push(entity);
             newUqSchema[i] = schema;
         }
@@ -134,18 +136,48 @@ export interface UqExt extends Uq {
         tsImport += ` } from "tonwa-uq";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars`
 
-        //let schema = JSON.stringify(this.uqSchema, undefined, 4);
         let schema = JSON.stringify(newUqSchema, undefined, 4);
         schema = schema.replace(/\"\: \[\]/g, '": [] as any');
-        return tsImport + ts + '\n\nexport const uqSchema=' + schema;
+        let ret = tsImport + ts + '\n\nexport const uqSchema=' + schema;
+
+        let bizSchema = biz.schema;
+        let atoms = [];
+        let sheets = [];
+        let details = [];
+        let subjects = [];
+        for (let i in bizSchema) {
+            let schema = bizSchema[i];
+            let { type } = schema;
+            switch (type) {
+                case 'atom': atoms.push(schema); break;
+                case 'sheet': sheets.push(schema); break;
+                case 'detail': details.push(schema); break;
+                case 'subject': subjects.push(schema); break;
+            }
+        }
+
+        function buildEnum(type: string, arr: any[]) {
+            if (arr.length === 0) return;
+            ret += `\n\nexport enum Enum${type} {`;
+            for (let item of arr) {
+                let { name, jName } = item;
+                ret += `\n\t${jName ?? name} = '${name}',`
+            }
+            ret += '\n}';
+        }
+        buildEnum('Atom', atoms);
+        buildEnum('Sheet', sheets);
+        buildEnum('Detail', details);
+        buildEnum('Subject', subjects);
+        return ret;
     }
 }
 
 abstract class Entity {
     protected readonly uqSchema: any;
-    protected readonly schema: any;
     protected readonly buildContext: UqBuildContext;
     protected readonly entityName: string;
+    readonly schema: any;
     constructor(uqSchema: any, schema: any, buildContext: UqBuildContext) {
         this.uqSchema = uqSchema;
         this.schema = schema;
