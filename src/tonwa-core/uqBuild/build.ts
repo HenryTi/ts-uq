@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as jsonpack from 'jsonpack';
+import fetch from 'node-fetch';
 import { env } from '../tool';
 import { lastBuildTime, red } from './tools';
 import { buildUqsFolder } from './uqsFolder';
@@ -27,7 +28,12 @@ export async function build(uqConfigs: UqConfig[], buildContext: UqBuildContext)
     if (!fs.existsSync(uqTsSrcPath)) {
         fs.mkdirSync(uqTsSrcPath);
     }
-    const centerHost = 'https://tv.jkchemical.com';
+    const centerLocal = 'localhost:3000';
+    let retCheck = await localCheck(centerLocal);
+    const centerHost = retCheck === null ?
+        'https://tv.jkchemical.com'
+        :
+        'http://' + centerLocal;
     let centerToken = undefined;
     let centerChannel = new CenterHttpChannel(buildContext.web, centerHost, centerToken);
 
@@ -51,3 +57,49 @@ export async function build(uqConfigs: UqConfig[], buildContext: UqBuildContext)
 
     await buildUqsFolder(buildContext, uqSchemas);
 };
+
+
+
+// 因为测试的都是局域网服务器，甚至本机服务器，所以一秒足够了
+// 网上找了上面的fetch timeout代码。
+// 尽管timeout了，fetch仍然继续，没有cancel
+
+// 实际上，一秒钟不够。web服务器会自动停。重启的时候，可能会比较长时间。也许两秒甚至更多。
+//const timeout = 2000;
+const timeout = 2000;
+const fetchOptions = {
+    method: "GET",
+    // mode: "no-cors", // no-cors, cors, *same-origin
+    headers: {
+        "Content-Type": "text/plain;charset=UTF-8"
+    },
+};
+
+function fetchLocalCheck(url: string): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            setTimeout(reject, timeout, new Error("Connection timed out"));
+            let resp = await fetch(url, fetchOptions as any);
+            if (resp.ok === false) {
+                reject('resp.ok === false');
+                return;
+            }
+            let text = await resp.text();
+            resolve(text);
+        }
+        catch (err) {
+            reject(err);
+        }
+    });
+}
+
+async function localCheck(host: string): Promise<string> {
+    if (!host) return null;
+    let url = `http://${host}/hello`;
+    try {
+        return await fetchLocalCheck(url);
+    }
+    catch (err) {
+        return null;
+    }
+}

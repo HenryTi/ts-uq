@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.build = void 0;
 const fs = require("fs");
 const jsonpack = require("jsonpack");
+const node_fetch_1 = require("node-fetch");
 const tool_1 = require("../tool");
 const tools_1 = require("./tools");
 const uqsFolder_1 = require("./uqsFolder");
@@ -30,7 +31,12 @@ function build(uqConfigs, buildContext) {
         if (!fs.existsSync(uqTsSrcPath)) {
             fs.mkdirSync(uqTsSrcPath);
         }
-        const centerHost = 'https://tv.jkchemical.com';
+        const centerLocal = 'localhost:3000';
+        let retCheck = yield localCheck(centerLocal);
+        const centerHost = retCheck === null ?
+            'https://tv.jkchemical.com'
+            :
+                'http://' + centerLocal;
         let centerToken = undefined;
         let centerChannel = new httpChannel_1.CenterHttpChannel(buildContext.web, centerHost, centerToken);
         let promises = uqConfigs.map(v => centerChannel.get('/tonwa/open/uq-schema', { uqOwner: v.dev.name, uqName: v.name }));
@@ -55,4 +61,47 @@ function build(uqConfigs, buildContext) {
 }
 exports.build = build;
 ;
+// 因为测试的都是局域网服务器，甚至本机服务器，所以一秒足够了
+// 网上找了上面的fetch timeout代码。
+// 尽管timeout了，fetch仍然继续，没有cancel
+// 实际上，一秒钟不够。web服务器会自动停。重启的时候，可能会比较长时间。也许两秒甚至更多。
+//const timeout = 2000;
+const timeout = 2000;
+const fetchOptions = {
+    method: "GET",
+    // mode: "no-cors", // no-cors, cors, *same-origin
+    headers: {
+        "Content-Type": "text/plain;charset=UTF-8"
+    },
+};
+function fetchLocalCheck(url) {
+    return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+        try {
+            setTimeout(reject, timeout, new Error("Connection timed out"));
+            let resp = yield (0, node_fetch_1.default)(url, fetchOptions);
+            if (resp.ok === false) {
+                reject('resp.ok === false');
+                return;
+            }
+            let text = yield resp.text();
+            resolve(text);
+        }
+        catch (err) {
+            reject(err);
+        }
+    }));
+}
+function localCheck(host) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!host)
+            return null;
+        let url = `http://${host}/hello`;
+        try {
+            return yield fetchLocalCheck(url);
+        }
+        catch (err) {
+            return null;
+        }
+    });
+}
 //# sourceMappingURL=build.js.map
