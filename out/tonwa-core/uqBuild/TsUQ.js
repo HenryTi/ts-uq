@@ -138,6 +138,7 @@ export interface UqExt extends Uq {
         let sheets = [];
         let details = [];
         let subjects = [];
+        let settings = [];
         for (let i in bizSchema) {
             let schema = bizSchema[i];
             let { type } = schema;
@@ -153,6 +154,9 @@ export interface UqExt extends Uq {
                     break;
                 case 'subject':
                     subjects.push(schema);
+                    break;
+                case 'setting':
+                    settings.push(schema);
                     break;
             }
         }
@@ -170,6 +174,7 @@ export interface UqExt extends Uq {
         buildEnum('Sheet', sheets);
         buildEnum('Detail', details);
         buildEnum('Subject', subjects);
+        buildEnum('Setting', settings);
         return ret;
     }
 }
