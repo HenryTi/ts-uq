@@ -3,8 +3,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.uqSchema = exports.EnumID = void 0;
 var EnumID;
 (function (EnumID) {
+    EnumID["$phrase"] = "$phrase";
 })(EnumID = exports.EnumID || (exports.EnumID = {}));
 exports.uqSchema = {
+    "$phrase": {
+        "name": "$phrase",
+        "type": "id",
+        "private": false,
+        "fields": [
+            {
+                "name": "name",
+                "type": "char",
+                "size": 200
+            },
+            {
+                "name": "caption",
+                "type": "char",
+                "size": 100
+            }
+        ],
+        "keys": [],
+        "global": false,
+        "isMinute": false
+    },
     "$role_my": {
         "name": "$role_my",
         "type": "query",
@@ -955,11 +976,6 @@ exports.uqSchema = {
                 "name": "deliveryTimeDescription",
                 "type": "char",
                 "size": 100
-            },
-            {
-                "name": "isRestrict",
-                "type": "tinyint",
-                "null": false
             }
         ],
         "keys": [
@@ -976,6 +992,11 @@ exports.uqSchema = {
                 "null": false,
                 "ID": "salesregion",
                 "tuid": "salesregion"
+            },
+            {
+                "name": "isRestrict",
+                "type": "id",
+                "null": false
             }
         ],
         "isOpen": true,
@@ -2565,6 +2586,10 @@ exports.uqSchema = {
                         "name": "deliveryTimeDescription",
                         "type": "char",
                         "size": 100
+                    },
+                    {
+                        "name": "isRestrict",
+                        "type": "int"
                     }
                 ]
             }
@@ -2848,6 +2873,52 @@ exports.uqSchema = {
             }
         ]
     },
+    "getbrandsalesregion": {
+        "name": "GetBrandSalesRegion",
+        "type": "query",
+        "private": false,
+        "sys": true,
+        "fields": [
+            {
+                "name": "salesRegion",
+                "type": "id",
+                "ID": "salesregion",
+                "tuid": "salesregion"
+            }
+        ],
+        "returns": [
+            {
+                "name": "ret",
+                "fields": [
+                    {
+                        "name": "id",
+                        "type": "id"
+                    },
+                    {
+                        "name": "name",
+                        "type": "char",
+                        "size": 50
+                    },
+                    {
+                        "name": "brand",
+                        "type": "id",
+                        "ID": "brand",
+                        "tuid": "brand"
+                    },
+                    {
+                        "name": "salesRegion",
+                        "type": "id",
+                        "ID": "salesregion",
+                        "tuid": "salesregion"
+                    },
+                    {
+                        "name": "level",
+                        "type": "int"
+                    }
+                ]
+            }
+        ]
+    },
     "productsalesrank": {
         "name": "ProductSalesRank",
         "type": "map",
@@ -2943,6 +3014,16 @@ exports.uqSchema = {
                 ]
             }
         ]
+    },
+    "$biz": {
+        "$user": {
+            "name": "$user",
+            "type": "$user"
+        },
+        "$unit": {
+            "name": "$unit",
+            "type": "$unit"
+        }
     }
 };
 //# sourceMappingURL=UqDefault.js.map

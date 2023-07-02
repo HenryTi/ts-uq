@@ -17,6 +17,10 @@ const tool_1 = require("../tool");
 const tools_1 = require("./tools");
 const uqsFolder_1 = require("./uqsFolder");
 const httpChannel_1 = require("../web/httpChannel");
+const urlCenterPublic = 'https://tv.jkchemical.com';
+const centerLocal = 'localhost:3000';
+const urlCenterLocal = `http://${centerLocal}`;
+const pathTonwaUqSchema = '/tonwa/open/uq-schema';
 function build(uqConfigs, buildContext) {
     return __awaiter(this, void 0, void 0, function* () {
         //let buildContext = new BuildContext(uqSrcPath);
@@ -31,15 +35,12 @@ function build(uqConfigs, buildContext) {
         if (!fs.existsSync(uqTsSrcPath)) {
             fs.mkdirSync(uqTsSrcPath);
         }
-        const centerLocal = 'localhost:3000';
+        const centerLocal = '';
         let retCheck = yield localCheck(centerLocal);
-        const centerHost = retCheck === null ?
-            'https://tv.jkchemical.com'
-            :
-                'http://' + centerLocal;
+        const centerHost = retCheck === null ? urlCenterPublic : urlCenterLocal;
         let centerToken = undefined;
         let centerChannel = new httpChannel_1.CenterHttpChannel(buildContext.web, centerHost, centerToken);
-        let promises = uqConfigs.map(v => centerChannel.get('/tonwa/open/uq-schema', { uqOwner: v.dev.name, uqName: v.name }));
+        let promises = uqConfigs.map(v => centerChannel.get(pathTonwaUqSchema, { uqOwner: v.dev.name, uqName: v.name }));
         let retUqSchemas = yield Promise.all(promises);
         let uqSchemas = [];
         for (let i = 0; i < retUqSchemas.length; i++) {
@@ -69,7 +70,6 @@ exports.build = build;
 const timeout = 2000;
 const fetchOptions = {
     method: "GET",
-    // mode: "no-cors", // no-cors, cors, *same-origin
     headers: {
         "Content-Type": "text/plain;charset=UTF-8"
     },
