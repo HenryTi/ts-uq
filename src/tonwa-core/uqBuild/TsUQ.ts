@@ -144,7 +144,7 @@ export interface UqExt extends Uq {
         let atoms = [];
         let sheets = [];
         let details = [];
-        let monikers = [];
+        let titles = [];
         for (let i in bizSchema) {
             let schema = bizSchema[i];
             let { name, type } = schema;
@@ -152,7 +152,7 @@ export interface UqExt extends Uq {
                 case 'atom': atoms.push(schema); break;
                 case 'sheet': sheets.push(schema); break;
                 case 'detail': details.push(schema); break;
-                case 'moniker': monikers.push(schema); break;
+                case 'title': titles.push(schema); break;
             }
         }
 
@@ -168,7 +168,7 @@ export interface UqExt extends Uq {
         buildEnum('Atom', atoms);
         buildEnum('Sheet', sheets);
         buildEnum('Detail', details);
-        buildEnum('Moniker', monikers);
+        buildEnum('Title', titles);
         return ret;
     }
 }
