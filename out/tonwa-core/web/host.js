@@ -79,7 +79,7 @@ function resUrlFromHost(host) {
 exports.resUrlFromHost = resUrlFromHost;
 const fetchOptions = {
     method: "GET",
-    mode: "no-cors",
+    mode: "no-cors", // no-cors, cors, *same-origin
     headers: {
         "Content-Type": "text/plain"
     },

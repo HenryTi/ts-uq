@@ -77,8 +77,8 @@ class HttpChannel {
             return ret.res;
         });
     }
-    get(url, params = undefined, waiting) {
-        return __awaiter(this, void 0, void 0, function* () {
+    get(url_1) {
+        return __awaiter(this, arguments, void 0, function* (url, params = undefined, waiting) {
             if (params) {
                 let keys = Object.keys(params);
                 if (keys.length > 0) {

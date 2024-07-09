@@ -13,7 +13,7 @@ export interface UqSchema {
     schema: any;
 }
 
-const urlCenterPublic = 'https://tv.jkchemical.com';
+const urlCenterPublic = 'https://note.jjol.cn';
 const centerLocal = 'localhost:3000';
 const urlCenterLocal = `http://${centerLocal}`;
 const pathTonwaUqSchema = '/tonwa/open/uq-schema';

@@ -34,8 +34,8 @@ class ApiBase {
             return yield channel.callFetch(url, method, body);
         });
     }
-    get(path, params = undefined) {
-        return __awaiter(this, void 0, void 0, function* () {
+    get(path_1) {
+        return __awaiter(this, arguments, void 0, function* (path, params = undefined) {
             let channel = yield this.getHttpChannel();
             return yield channel.get(this.path + path, params);
         });
